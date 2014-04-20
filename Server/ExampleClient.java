@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-public class Client{
+public class ExampleClient{
 
 public static void main(String[] args){	
 
@@ -13,7 +13,7 @@ System.exit(1);
 int port = Integer.parseInt(args[0]);
 
 try{
-Socket socket = new Socket("sslab03.cs.purdue.edu",port);
+Socket socket = new Socket(args[1],port);
 PrintWriter pw = new PrintWriter(socket.getOutputStream(),true);
 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 pw.println("{\"option\":\"get_all_recipes\"}");
