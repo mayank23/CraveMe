@@ -5,7 +5,13 @@ public class Client{
 
 public static void main(String[] args){	
 
+if(args.length<2)
+{
+System.out.println("Usage: java Client portnum hostname");
+System.exit(1);
+}
 int port = Integer.parseInt(args[0]);
+
 try{
 Socket socket = new Socket("sslab03.cs.purdue.edu",port);
 PrintWriter pw = new PrintWriter(socket.getOutputStream(),true);
@@ -15,7 +21,9 @@ System.out.println(in.readLine());
 }
 catch(Exception e)
 {
+System.out.println("Server is offline!\n\n");
 e.printStackTrace();
+
 }
 
 
