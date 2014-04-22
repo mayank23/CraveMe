@@ -48,12 +48,12 @@ public class Server{
 							 System.out.println("about to read file");
 							 
 							 String file_name = "photos/photos_"+Math.random()*22342+"_"+Math.random()*45643+"_"+Math.random()*10000+"_"+json.getString("file_name");
-							
+							 System.out.println("file_name= "+file_name);
 							 long length = json.getLong("length");
 							 
 							 // photo upload, mode.
 							 // start reading from the server
-							 byte[] buffer = new byte[1024];
+							
 							 
 							 File file = new File(file_name);
 							 OutputStream outs = new FileOutputStream(file);

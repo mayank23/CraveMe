@@ -37,10 +37,10 @@ String x = "{\"option\":\"photo_upload\",\"file_name\":\"test2.jpg\",\"length\":
 pw.println(x);
 
 IOUtils.copy(in, out);
-System.out.println(reader.readLine());
+
 in.close();
 out.close();
-
+System.out.println(reader.readLine());
 }
 else
 	if(args[2].equals("register_user"))
