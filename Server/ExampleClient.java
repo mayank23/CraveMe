@@ -50,6 +50,7 @@ while ((count = in.read(buffer)) >= 0) {
         }
 	}
 out.flush();
+System.out.println(reader.readLine());
 out.close();
 in.close();
 }
@@ -76,7 +77,7 @@ else
 			{
 				System.out.println("unrecognized option!");
 			}
-	System.out.println(reader.readLine());
+	
 }
 catch(Exception e)
 {
