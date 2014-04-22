@@ -235,6 +235,7 @@ class Work{
 	public static JSONObject uploadFilePathToMeal(JSONObject request)
 	{
 		try{
+		ConnectToDB();
 		int meal_id = request.getInt("meal_id");
 		String server_file_path = request.getString("server_file_path");
 		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET photo_url='?' WHERE id=?");
@@ -242,10 +243,12 @@ class Work{
 		stmt.setInt(2, meal_id);
 		JSONObject response = new JSONObject();
 		response.put("response", "success");
+		CloseConnection();
 		return response;
 		}
 		catch(Exception e)
 		{
+			CloseConnection();
 			e.printStackTrace();
 			return null;		
 		}
