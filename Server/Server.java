@@ -39,6 +39,8 @@ public class Server{
 						 String message = in.readLine();
 						 JSONObject json = new JSONObject(message);
 						 System.out.println("message:"+message+"|"+json.toString());
+						 InputStream inf = clientSocket.getInputStream();
+						 
 						 if(json.getString("option").equals("photo_upload"))
 						 {
 							 System.out.println("about to read file");
@@ -47,23 +49,23 @@ public class Server{
 							 long length = json.getLong("length");
 							 // photo upload, mode.
 							 // start reading from the server
-							 char[] buffer = new char[1];
-							 FileWriter bw = new FileWriter(file_name);
+							 byte[] buffer = new byte[1];
+							 
+							 File file = new File(file_name);
+							 OutputStream outs = new FileOutputStream(file);
 							 int count=0;
-							BufferedOutputStream o = new BufferedOutputStream(clientSocket.getOutputStream());
 							
-			
 							 long total =0;
-							 while((count = in.read(buffer)) >= 0 && total !=length )
+							 while((count = inf.read(buffer)) >= 0 && total !=length )
 							 {
 								 System.out.println("total : "+total);
 								 
-								bw.write(buffer	, 0, count);
-								bw.flush();
+								outs.write(buffer	, 0, count);
+								outs.flush();
 								
 								total += count;
 							 }
-							 bw.close();
+							 outs.close();
 							 System.out.println("stored on server");
 							 out.println("got the file: "+file_name );
 						 }else{
