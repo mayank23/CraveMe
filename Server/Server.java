@@ -30,7 +30,7 @@ public class Server{
 				e.printStackTrace();
 				server = null;
 			}
-			 System.out.println("going to while");
+		
 			while(server != null && true){
 				
 				try{
@@ -45,7 +45,7 @@ public class Server{
 						 
 						 if(json.getString("option").equals("photo_upload"))
 						 {
-							 System.out.println("about to read file");
+							 
 							 
 							 String file_name = "photos/photos_"+(int)(Math.random()*2234211)+"_"+(int)(Math.random()*22342111)+"_"+(int)(Math.random()*22342)+"_"+json.getString("file_name");
 							 System.out.println("file_name= "+file_name);
