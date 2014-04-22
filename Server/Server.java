@@ -16,22 +16,46 @@ import java.sql.Statement;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
-public class Server{
+public class Server extends Thread{
+	static ServerSocket server;
+
 	
 	public static void main(String[] args)
 	{
-			ServerSocket server;
+			
 			try{
 				
 				 server = new ServerSocket(9012);
+				 
 			}
 			catch(Exception e)
 			{
 				e.printStackTrace();
 				server = null;
 			}
+			for(int x=0;x<5;x++)
+			{
+			Pool pool = new Pool(server);
+			pool.start();
+			}
+
+			
+	
 		
-			while(server != null && true){
+	}
+
+
+}
+
+class Pool extends Thread{
+		static ServerSocket server;
+		public Pool(ServerSocket server){
+			this.server = server;
+		}
+		public void run()
+		{
+			//thread pool
+			while(true){
 				
 				try{
 						 Socket clientSocket = server.accept();    
@@ -107,10 +131,6 @@ public class Server{
 			
 		}
 		
-	
 		
 	}
-
-
-
 }
