@@ -37,16 +37,19 @@ String x = "{\"option\":\"photo_upload\",\"file_name\":\"test2.jpg\",\"length\":
 pw.println(x);
 
 IOUtils.copy(in, out);
-out.close();
 System.out.println(reader.readLine());
 in.close();
+out.close();
+
 }
 else
 	if(args[2].equals("register_user"))
 	{
 
-		String y ="{\"option\":\"register_user\",\"user_name\":\"mayank23\",\"password\":\"dsf\",\"email\":\"email@gmail.com\"}";
+		String y ="{\"option\":\"register_user\",\"user_name\":\"mayank2333\",\"password\":\"dsf\",\"email\":\"email@gmail.com\"}";
 		pw.println(y);
+		System.out.println(reader.readLine());
+		
 	}
 	else
 		if(args[2].equals("get_all_recipes"))

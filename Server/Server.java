@@ -46,7 +46,8 @@ public class Server{
 						 if(json.getString("option").equals("photo_upload"))
 						 {
 							 System.out.println("about to read file");
-							 String file_name = "photos/photos_"+json.getString("file_name");
+							 
+							 String file_name = "photos/photos_"+Math.random()*22342+"_"+Math.random()*45643+"_"+Math.random()*10000+"_"+json.getString("file_name");
 							
 							 long length = json.getLong("length");
 							 
@@ -57,15 +58,12 @@ public class Server{
 							 File file = new File(file_name);
 							 OutputStream outs = new FileOutputStream(file);
 							 IOUtils.copy(inf, outs);
+							 out.println("got the file: "+file_name );
 							 inf.close();
 							 outs.close();
-							 out.println("got the file: "+file_name );
 							 out.flush();
 							 out.close();
 							 System.out.println("stored on server");
-							 
-							 inf.close();
-					
 							
 						 }else{
 						 MessageProtocol protocol = new MessageProtocol(message);
