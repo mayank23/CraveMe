@@ -50,27 +50,46 @@ public class Server{
 							 String file_name = "photos/photos_"+(int)(Math.random()*2234211)+"_"+(int)(Math.random()*22342111)+"_"+(int)(Math.random()*22342)+"_"+json.getString("file_name");
 							 System.out.println("file_name= "+file_name);
 							 long length = json.getLong("length");
-							 
 							 // photo upload, mode.
 							 // start reading from the server
-							
-							 
 							 File file = new File(file_name);
 							 OutputStream outs = new FileOutputStream(file);
 							 IOUtils.copy(inf, outs);
+							 // only shut down inputstream from socket
 							 clientSocket.shutdownInput();
+							 // close the file output stream for writing to file from socket.
 							 outs.close();
-							 out.println("got the file: "+file_name );
-							 out.close();
+							 // now that we have stored the file on the server, update the database.
+							 
+							 json.put("server_file_path", file_name);
+							 JSONObject output = Work.uploadFilePathToMeal(json);
+							 if(output == null)
+							 {
+								 output = new JSONObject();
+								 output.put("response", "error");
+								 out.println(output.toString());
+								 
+							 }else{
+							
+							output.put("server_file_path", file_name); 
+							 // return response to socket print writer.
+							 out.println(output.toString());
 							 System.out.println("stored on server");
+							 // close print writer and socket
+							 }
+							 out.close();
 							 clientSocket.close();
 							
-						 }else{
+						 }
+						 else
+						 {
 						 MessageProtocol protocol = new MessageProtocol(message);
 						 JSONObject response =   protocol.parseMessage();
 						 if(response == null)
 						 {
-							 out.println("ERROR");
+							 response = new JSONObject();
+							 response.put("response", "error");
+							 out.println(response.toString());
 						 }
 						 else{
 							 out.println(response.toString());
@@ -81,6 +100,7 @@ public class Server{
 				}
 			catch(Exception e)
 			{
+				
 				e.printStackTrace();
 			}
 			

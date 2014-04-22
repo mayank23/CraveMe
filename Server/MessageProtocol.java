@@ -107,6 +107,7 @@ class Work{
 			
 		}
 		json.put("recipes",recipes);
+		json.put("response", "success");
 		
 		CloseConnection();
 		return json;
@@ -149,7 +150,7 @@ class Work{
 				stmt.setString(3, password);
 				stmt.executeUpdate();
 				JSONObject output = new JSONObject();
-				output.put("result", "success");
+				output.put("response", "success");
 				output.put("email", email);
 				output.put("user_name", user_name);
 				return output;
@@ -212,6 +213,7 @@ class Work{
 			JSONObject output = new JSONObject();
 			output.put("user_name", user_name);
 			output.put("id", meal_id);
+			output.put("response", "success");
 			keys.close();
 			CloseConnection();
 			return output;
@@ -229,4 +231,25 @@ class Work{
 		return null;
 		
 	}
+	
+	public static JSONObject uploadFilePathToMeal(JSONObject request)
+	{
+		try{
+		int meal_id = request.getInt("meal_id");
+		String server_file_path = request.getString("server_file_path");
+		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET photo_url='?' WHERE id=?");
+		stmt.setString(1, server_file_path);
+		stmt.setInt(2, meal_id);
+		JSONObject response = new JSONObject();
+		response.put("response", "success");
+		return response;
+		}
+		catch(Exception e)
+		{
+			return null;		
+		}
+	
+		
+	}
+	 
 }

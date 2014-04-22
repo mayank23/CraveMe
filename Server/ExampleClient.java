@@ -34,7 +34,7 @@ FileInputStream in = new FileInputStream("test2.jpg");
 
 long length = file.length();
 
-String x = "{\"option\":\"photo_upload\",\"file_name\":\"test2.jpg\",\"length\":"+length+",\"email\":\"email@gmail.com\"}";
+String x = "{\"option\":\"photo_upload\",\"file_name\":\"test2.jpg\",\"length\":"+length+",\"meal_id\":1}";
 pw.println(x);
 
 IOUtils.copy(in, out);
