@@ -35,7 +35,7 @@ public class Server extends Thread{
 			}
 			for(int x=0;x<5;x++)
 			{
-			Pool pool = new Pool(server);
+			Pool pool = new Pool(server,x+1);
 			pool.start();
 			}
 
@@ -49,8 +49,10 @@ public class Server extends Thread{
 
 class Pool extends Thread{
 		static ServerSocket server;
-		public Pool(ServerSocket server){
+		int number=0;
+		public Pool(ServerSocket server, int number){
 			this.server = server;
+			this.number = number;
 		}
 		public void run()
 		{
@@ -59,6 +61,7 @@ class Pool extends Thread{
 				
 				try{
 						 Socket clientSocket = server.accept();    
+						 System.out.println("\nThread: "+number+"got the connection\n");
 						 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 						 
 						 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
