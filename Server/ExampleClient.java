@@ -29,12 +29,12 @@ OutputStream out = socket.getOutputStream();
 // now actually write the file
 int count=0;
 byte[] buffer = new byte[1024];
-File file = new File("test2.jpg");
-FileInputStream in = new FileInputStream("test2.jpg");
+File file = new File("test.jpg");
+FileInputStream in = new FileInputStream("test.jpg");
 
 long length = file.length();
 
-String x = "{\"option\":\"photo_upload\",\"file_name\":\"test2.jpg\",\"length\":"+length+",\"meal_id\":1}";
+String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.jpg\",\"length\":"+length+",\"meal_id\":1}";
 pw.println(x);
 
 IOUtils.copy(in, out);
