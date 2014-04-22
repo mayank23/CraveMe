@@ -25,6 +25,7 @@ BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInput
 if(args[2].equals("upload_photo")){
 
 OutputStream out = socket.getOutputStream();
+
 // now actually write the file
 int count=0;
 byte[] buffer = new byte[1024];
@@ -37,10 +38,10 @@ String x = "{\"option\":\"photo_upload\",\"file_name\":\"test2.jpg\",\"length\":
 pw.println(x);
 
 IOUtils.copy(in, out);
-
 in.close();
-out.close();
+socket.shutdownOutput();
 System.out.println(reader.readLine());
+socket.close();
 }
 else
 	if(args[2].equals("register_user"))

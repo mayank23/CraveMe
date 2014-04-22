@@ -58,11 +58,12 @@ public class Server{
 							 File file = new File(file_name);
 							 OutputStream outs = new FileOutputStream(file);
 							 IOUtils.copy(inf, outs);
-							 inf.close();
+							 clientSocket.shutdownInput();
 							 outs.close();
 							 out.println("got the file: "+file_name );
 							 out.close();
 							 System.out.println("stored on server");
+							 clientSocket.close();
 							
 						 }else{
 						 MessageProtocol protocol = new MessageProtocol(message);
