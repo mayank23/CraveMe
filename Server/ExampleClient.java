@@ -29,12 +29,12 @@ OutputStream out = socket.getOutputStream();
 // now actually write the file
 int count=0;
 byte[] buffer = new byte[1];
-File file = new File("test.txt");
-FileInputStream in = new FileInputStream("test.txt");
+File file = new File("test.jpg");
+FileInputStream in = new FileInputStream("test.jpg");
 
 long length = file.length();
 
-String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.txt\",\"length\":"+length+",\"email\":\"email@gmail.com\"}\n";
+String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.jpg\",\"length\":"+length+",\"email\":\"email@gmail.com\"}\n";
 pw.println(x);
 
 
