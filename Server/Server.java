@@ -63,13 +63,13 @@ class Pool extends Thread{
 						 Socket clientSocket = server.accept();    
 						 System.out.println("\nThread: "+number+"got the connection\n");
 						 PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-						 
+ 
 						 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 						 String message = in.readLine();
 						 JSONObject json = new JSONObject(message);
 						 System.out.println("message:"+message+"|"+json.toString());
+ 
 						 InputStream inf = clientSocket.getInputStream();
-						 
 						 if(json.getString("option").equals("photo_upload"))
 						 {
 							 
@@ -109,6 +109,18 @@ class Pool extends Thread{
 							
 						 }
 						 else
+						if(json.getString("option").equals("get_photo"))
+						{
+								 String server_file_path = json.getString("server_file_path");
+								 // get the photo.
+								 FileInputStream fin = new FileInputStream(server_file_path);
+								 OutputStream outstream = clientSocket.getOutputStream();
+								 IOUtils.copy(fin, outstream);
+								 fin.close();
+								 outstream.close();
+								 
+						}
+						else
 						 {
 						 MessageProtocol protocol = new MessageProtocol(message);
 						 JSONObject response =   protocol.parseMessage();
