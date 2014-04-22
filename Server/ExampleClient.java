@@ -20,7 +20,7 @@ try{
 Socket socket = new Socket(args[1],port);
 PrintWriter pw = new PrintWriter(socket.getOutputStream(),true);
 
-if(args[3].equals("upload_photo")){
+if(args[2].equals("upload_photo")){
 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 OutputStream out = socket.getOutputStream();
 // now actually write the file
@@ -54,20 +54,20 @@ out.close();
 in.close();
 }
 else
-	if(args[3].equals("register_user"))
+	if(args[2].equals("register_user"))
 	{
 
 		String y ="{\"option\":\"register_user\",\"user_name\":\"mayank23\",\"password\":\"dsf\",\"email\":\"email@gmail.com\"}";
 		pw.println(y);
 	}
 	else
-		if(args[3].equals("get_all_recipes"))
+		if(args[2].equals("get_all_recipes"))
 		{
 			pw.println("{\"option\":\"get_all_recipes\"}");
 
 		}
 		else
-			if(args[3].equals("post_meal"))
+			if(args[2].equals("post_meal"))
 			{
 				pw.println("{\"option\":\"post_meal\",\"user_name\":\"mayank23\",\"title\":\"best meal in the world\",\"description\":\"fifa meal night\",\"category\":\"american\",\"recipe_id\":-1}");
 
