@@ -58,10 +58,9 @@ public class Server{
 							 File file = new File(file_name);
 							 OutputStream outs = new FileOutputStream(file);
 							 IOUtils.copy(inf, outs);
-							 out.println("got the file: "+file_name );
 							 inf.close();
 							 outs.close();
-							 out.flush();
+							 out.println("got the file: "+file_name );
 							 out.close();
 							 System.out.println("stored on server");
 							
