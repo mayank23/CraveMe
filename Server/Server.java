@@ -61,10 +61,12 @@ public class Server{
 								 System.out.println("total : "+total);
 								 
 								outs.write(buffer	, 0, count);
-								outs.flush();
+								
 								
 								total += count;
 							 }
+							 outs.flush();
+							 inf.close();
 							 outs.close();
 							 System.out.println("stored on server");
 							 out.println("got the file: "+file_name );

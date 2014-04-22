@@ -45,14 +45,17 @@ while ((count = in.read(buffer)) >= 0) {
 	System.out.print("writing: "+total);
      	out.write(buffer,0,count);
      	total += count;
-       out.flush();
+      
         System.out.println("flushed");
         if(total == length)
         {
         	break;
         }
 	}
+out.flush();
 out.close();
+in.close();
+
 
 
 
