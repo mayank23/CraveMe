@@ -2,4 +2,4 @@
 echo "Building..."
 javac ExampleClient.java
 echo "Running..."
-java ExampleClient $1 $2
+java ExampleClient $1 $2 $3
