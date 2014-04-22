@@ -30,13 +30,13 @@ OutputStream out = socket.getOutputStream();
 int count=0;
 byte[] buffer = new byte[1];
 File file = new File("test.jpg");
-FileInputStream file2 = new FileInputStream("test.jpg");
-FileWriter fw = new FileWriter(file);
+FileInputStream in = new FileInputStream("test.jpg");
+
 long length = file.length();
 
 String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.jpg\",\"length\":"+length+",\"email\":\"email@gmail.com\"}\n";
 pw.println(x);
-BufferedInputStream in = new BufferedInputStream(file2);
+
 
 long total =0;
 System.out.println("about to write");
