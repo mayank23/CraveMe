@@ -19,9 +19,9 @@ try{
 
 Socket socket = new Socket(args[1],port);
 PrintWriter pw = new PrintWriter(socket.getOutputStream(),true);
-
-if(args[2].equals("upload_photo")){
 BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+if(args[2].equals("upload_photo")){
+
 OutputStream out = socket.getOutputStream();
 // now actually write the file
 int count=0;
@@ -76,7 +76,7 @@ else
 			{
 				System.out.println("unrecognized option!");
 			}
-
+	System.out.println(reader.readLine());
 }
 catch(Exception e)
 {
