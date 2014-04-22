@@ -66,11 +66,13 @@ public class Server{
 								
 								total += count;
 							 }
+							 out.println("got the file: "+file_name );
+							 System.out.println("stored on server");
+							 outs.close();
 							 outs.flush();
 							 inf.close();
-							 outs.close();
-							 System.out.println("stored on server");
-							 out.println("got the file: "+file_name );
+					
+							
 						 }else{
 						 MessageProtocol protocol = new MessageProtocol(message);
 						 JSONObject response =   protocol.parseMessage();
