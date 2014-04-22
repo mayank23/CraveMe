@@ -234,6 +234,7 @@ class Work{
 	
 	public static JSONObject uploadFilePathToMeal(JSONObject request)
 	{
+
 		try{
 		ConnectToDB();
 		int meal_id = request.getInt("meal_id");
@@ -242,6 +243,7 @@ class Work{
 		System.out.println("id: "+meal_id +"and server_file_path: "+server_file_path);
 		stmt.setString(1, server_file_path);
 		stmt.setInt(2, meal_id);
+		stmt.executeUpdate();
 		JSONObject response = new JSONObject();
 		response.put("response", "success");
 		CloseConnection();
