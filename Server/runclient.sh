@@ -1,5 +1,5 @@
 #!/bin/bash
 echo "Building..."
-javac ExampleClient.java
+javac -cp ".:commons-io-2.4.jar" ExampleClient.java
 echo "Running..."
-java ExampleClient $1 $2 $3
+java -cp ".:commons-io-2.4.jar" ExampleClient $1 $2 $3
