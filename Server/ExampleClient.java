@@ -3,6 +3,8 @@ import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
 
+import org.apache.commons.io.IOUtils;
+
 public class ExampleClient{
 
 public static void main(String[] args){	
@@ -34,24 +36,9 @@ long length = file.length();
 String x = "{\"option\":\"photo_upload\",\"file_name\":\"test2.jpg\",\"length\":"+length+",\"email\":\"email@gmail.com\"}";
 pw.println(x);
 
-
-long total =0;
-System.out.println("about to write");
-while ((count = in.read(buffer)) >= 0) {
-	
-	System.out.print("writing: "+total);
-     	out.write(buffer,0,count);
-     	total += count;
-      
-        System.out.println("flushed");
-        if(total == length)
-        {
-        	break;
-        }
-	}
-out.flush();
-System.out.println(reader.readLine());
+IOUtils.copy(in, out);
 out.close();
+System.out.println(reader.readLine());
 in.close();
 }
 else

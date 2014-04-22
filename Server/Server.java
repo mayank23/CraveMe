@@ -12,6 +12,8 @@ import java.sql.Statement;
 /* java server */
 
 
+
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
 public class Server{
@@ -54,24 +56,14 @@ public class Server{
 							 
 							 File file = new File(file_name);
 							 OutputStream outs = new FileOutputStream(file);
-							 int count=0;
-							
-							 long total =0;
-							 while((count = inf.read(buffer)) >= 0 && total !=length )
-							 {
-								 System.out.println("total : "+total);
-								 
-								outs.write(buffer	, 0, count);
-								
-								
-								total += count;
-							 }
+							 IOUtils.copy(inf, outs);
+							 inf.close();
+							 outs.close();
 							 out.println("got the file: "+file_name );
 							 out.flush();
 							 out.close();
 							 System.out.println("stored on server");
-							 outs.close();
-							 outs.flush();
+							 
 							 inf.close();
 					
 							
