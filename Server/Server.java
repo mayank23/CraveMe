@@ -47,9 +47,10 @@ public class Server{
 							 String file_name = "photos_"+json.getString("file_name");
 							 PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
 							 long length = json.getLong("length");
+							 
 							 // photo upload, mode.
 							 // start reading from the server
-							 byte[] buffer = new byte[1];
+							 byte[] buffer = new byte[1024];
 							 
 							 File file = new File(file_name);
 							 OutputStream outs = new FileOutputStream(file);

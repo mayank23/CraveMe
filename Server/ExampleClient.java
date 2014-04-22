@@ -28,7 +28,7 @@ OutputStream out = socket.getOutputStream();
 
 // now actually write the file
 int count=0;
-byte[] buffer = new byte[1];
+byte[] buffer = new byte[1024];
 File file = new File("test.jpg");
 FileInputStream in = new FileInputStream("test.jpg");
 
