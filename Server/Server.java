@@ -44,7 +44,7 @@ public class Server{
 						 if(json.getString("option").equals("photo_upload"))
 						 {
 							 System.out.println("about to read file");
-							 String file_name = "photos_"+json.getString("file_name");
+							 String file_name = "photos/photos_"+json.getString("file_name");
 							 PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
 							 long length = json.getLong("length");
 							 
