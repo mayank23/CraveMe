@@ -45,7 +45,7 @@ public class Server{
 						 {
 							 System.out.println("about to read file");
 							 String file_name = "photos/photos_"+json.getString("file_name");
-							 PrintWriter pw = new PrintWriter(clientSocket.getOutputStream());
+							
 							 long length = json.getLong("length");
 							 
 							 // photo upload, mode.
@@ -67,6 +67,8 @@ public class Server{
 								total += count;
 							 }
 							 out.println("got the file: "+file_name );
+							 out.flush();
+							 out.close();
 							 System.out.println("stored on server");
 							 outs.close();
 							 outs.flush();
@@ -83,6 +85,8 @@ public class Server{
 						 else{
 							 out.println(response.toString());
 						 }
+						 out.flush();
+						 out.close();
 						 }
 				}
 			catch(Exception e)
