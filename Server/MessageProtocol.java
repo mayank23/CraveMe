@@ -246,6 +246,7 @@ class Work{
 		}
 		catch(Exception e)
 		{
+			e.printStackTrace();
 			return null;		
 		}
 	
