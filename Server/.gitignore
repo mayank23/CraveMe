@@ -6,3 +6,6 @@
 *.gif
 *.jpeg
 *.bmp
+#text files
+*.txt
+
