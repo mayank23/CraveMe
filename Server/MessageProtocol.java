@@ -45,6 +45,12 @@ public JSONObject parseMessage() throws Exception
 				JSONObject output  = Work.postMeal(json);
 				return output;
 			}
+			else
+				if(option.equals("get_single_meal"))
+				{
+					JSONObject output = Work.getSingleMeal(json);
+					return output;
+				}
 		
 			// else
 			return null;
@@ -259,5 +265,47 @@ class Work{
 	
 		
 	}
+	public static JSONObject getSingleMeal(JSONObject request)
+	{
+		int error = ConnectToDB();
+		if(error == -1)
+		{// error in connection to mysql
+			return null;
+		}
+		// else proceed
+		try{
+			int meal_id = request.getInt("meal_id");
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM meals WHERE id=?");
+			stmt.setInt(1,meal_id);
+			ResultSet rs = stmt.executeQuery();
+			JSONObject output = new JSONObject();
+			if(rs.next())
+			{
+				output.put("id", rs.getInt(1));
+				output.put("photo_url", rs.getString(2));
+				output.put("description", rs.getString(3));
+				output.put("recipe_id", rs.getInt(4));
+				output.put("category", rs.getString(5));
+				output.put("views", rs.getInt(6));
+				output.put("title", rs.getString(7));
+				output.put("craves"	, rs.getInt(8));
+				output.put("nots", rs.getInt(9));
+				output.put("user_name", rs.getString(10));
+			
+			}
+			
+			CloseConnection();
+			return output;
+		}
+		catch(Exception e)
+		{
+			
+			CloseConnection();
+			return null;
+
+		}
+		
+	}
+	
 	 
 }
