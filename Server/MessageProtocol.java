@@ -337,15 +337,15 @@ class Work{
 				int meal_id = request.getInt("meal_id");
 				if(request.get("vote_option")=="crave")
 				{
-					SQL += " craves=crave+1 ";
+					SQL += " craves = crave+1 ";
 				}
 				else
 					if(request.getString("vote_option")=="not")
 					{
-						SQL +=" nots=nots+1 ";
+						SQL +=" nots = nots+1 ";
 					}
 				SQL += " WHERE id=?";
-				
+				System.out.println(SQL);
 				PreparedStatement stmt = conn.prepareStatement(SQL);
 				stmt.setInt(1, meal_id);
 				stmt.executeUpdate();
