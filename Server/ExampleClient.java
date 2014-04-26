@@ -71,9 +71,17 @@ System.out.println(reader.readLine());
 				else
 					if(args[2].equals("vote_meal"))
 					{
+						// vote on a mean. 
 						pw.println("{\"option\":\"vote_meal\",\"meal_id\":1,\"vote_option\":\"not\"}");
 						System.out.println(reader.readLine());
 					}
+					else
+						if(args[2].equals("vote_recipe"))
+						{
+							// vote on recipe
+							pw.println("{\"option\":\"vote_meal\",\"recipe_id\":1,\"vote_option\":\"crave\"}");
+							System.out.println(reader.readLine());
+						}
 			else
 			{
 				System.out.println("unrecognized option!");

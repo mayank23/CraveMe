@@ -63,7 +63,8 @@ public JSONObject parseMessage() throws Exception
 					else
 						if(option.equals("vote_recipe"))
 						{
-							
+							JSONObject output = Work.voteRecipe(json);
+							return output;
 						}
 		
 			// else
@@ -321,7 +322,7 @@ class Work{
 		
 	}
 	
-	 // voting function
+	 // voting on meals function
 	public static JSONObject voteMeal(JSONObject request)
 	{
 		int error = ConnectToDB();
@@ -363,4 +364,47 @@ class Work{
 		
 		
 	}
+	// voting on recipes
+	 // voting function
+		public static JSONObject voteRecipe(JSONObject request)
+		{
+			int error = ConnectToDB();
+			if(error == -1)
+			{
+				return null;
+			}
+			else
+			{
+				// proceed
+				try{
+					String SQL = "UPDATE recipes SET ";
+					int recipe_id = request.getInt("recipe_id");
+					if(request.get("vote_option").equals("crave"))
+					{
+						SQL += " craves = craves+1 ";
+					}
+					else
+						if(request.getString("vote_option").equals("not"))
+						{
+							SQL +=" nots = nots+1 ";
+						}
+					SQL += " WHERE id=?";
+					System.out.println(SQL);
+					PreparedStatement stmt = conn.prepareStatement(SQL);
+					stmt.setInt(1, recipe_id);
+					stmt.executeUpdate();
+					JSONObject response = new JSONObject();
+					response.put("response", "success");
+					CloseConnection();
+					return response;
+				}catch(Exception e){
+					e.printStackTrace();
+					CloseConnection();
+					return null;
+				}
+			}
+			
+			
+			
+		}
 }
