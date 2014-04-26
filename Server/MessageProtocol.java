@@ -353,7 +353,7 @@ class Work{
 				response.put("response", "success");
 				CloseConnection();
 			}catch(Exception e){
-			
+				e.printStackTrace();
 				CloseConnection();
 			}
 		}
