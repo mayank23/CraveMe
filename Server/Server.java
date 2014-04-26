@@ -13,6 +13,7 @@ import java.sql.Statement;
 
 
 
+
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
@@ -66,6 +67,7 @@ class Pool extends Thread{
  
 						 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 						 String message = in.readLine();
+						 System.out.println(message);
 						 JSONObject json = new JSONObject(message);
 						 System.out.println("message:"+message+"|"+json.toString());
  
@@ -138,6 +140,8 @@ class Pool extends Thread{
 						 }
 						 else{
 							 out.println(response.toString());
+							 // print to terminal
+							 System.out.println(response.toString());
 						 }
 						 out.flush();
 						 out.close();
