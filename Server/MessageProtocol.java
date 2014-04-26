@@ -335,12 +335,12 @@ class Work{
 			try{
 				String SQL = "UPDATE meals SET ";
 				int meal_id = request.getInt("meal_id");
-				if(request.get("vote_option")=="crave")
+				if(request.get("vote_option").equals("crave"))
 				{
 					SQL += " craves = crave+1 ";
 				}
 				else
-					if(request.getString("vote_option")=="not")
+					if(request.getString("vote_option").equals("not"))
 					{
 						SQL +=" nots = nots+1 ";
 					}
