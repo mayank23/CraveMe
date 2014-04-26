@@ -25,9 +25,12 @@ public MessageProtocol(String message)
 }
 public JSONObject parseMessage() throws Exception
 {
-	
+	// parse the message.
 	JSONObject json = new JSONObject(this.message);
 	String option = json.get("option").toString();
+	
+	
+	// what to do
 	if(option.equals("get_all_recipes"))
 	{
 		JSONObject output = Work.recipes_all(json);
@@ -51,6 +54,17 @@ public JSONObject parseMessage() throws Exception
 					JSONObject output = Work.getSingleMeal(json);
 					return output;
 				}
+				else
+					if(option.equals("vote_meal"))
+					{
+						JSONObject output = Work.voteMeal(json);
+						return output;
+					}
+					else
+						if(option.equals("vote_recipe"))
+						{
+							
+						}
 		
 			// else
 			return null;
@@ -307,5 +321,44 @@ class Work{
 		
 	}
 	
-	 
+	 // voting function
+	public static JSONObject voteMeal(JSONObject request)
+	{
+		int error = ConnectToDB();
+		if(error == -1)
+		{
+			return null;
+		}
+		else
+		{
+			// proceed
+			try{
+				String SQL = "UPDATE meals SET";
+				int meal_id = request.getInt("meal_id");
+				if(request.get("vote_option")=="crave")
+				{
+					SQL += "craves=crave+1";
+				}
+				else
+					if(request.getString("vote_option")=="not")
+					{
+						SQL +="nots=nots+1";
+					}
+				SQL += "WHERE id=?";
+				
+				PreparedStatement stmt = conn.prepareStatement(SQL);
+				stmt.setInt(1, meal_id);
+				stmt.executeUpdate();
+				JSONObject response = new JSONObject();
+				response.put("response", "success");
+				CloseConnection();
+			}catch(Exception e){
+			
+				CloseConnection();
+			}
+		}
+		
+		return request;
+		
+	}
 }
