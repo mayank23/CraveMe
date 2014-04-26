@@ -352,13 +352,15 @@ class Work{
 				JSONObject response = new JSONObject();
 				response.put("response", "success");
 				CloseConnection();
+				return response;
 			}catch(Exception e){
 				e.printStackTrace();
 				CloseConnection();
+				return null;
 			}
 		}
 		
-		return request;
+		
 		
 	}
 }
