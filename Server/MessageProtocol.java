@@ -125,6 +125,8 @@ class Work{
 			current.put("time", result.getInt("time"));
 			current.put("photo_url", result.getString("photo_url"));
 			current.put("user_id", result.getInt("user_id"));
+			current.put("craves",result.getInt("craves"));
+			current.put("nots", result.getInt("nots"));
 			recipes.put(current);
 			
 		}

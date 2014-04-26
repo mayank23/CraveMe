@@ -79,7 +79,7 @@ System.out.println(reader.readLine());
 						if(args[2].equals("vote_recipe"))
 						{
 							// vote on recipe
-							pw.println("{\"option\":\"vote_recipe\",\"recipe_id\":1,\"vote_option\":\"not\"}");
+							pw.println("{\"option\":\"vote_recipe\",\"recipe_id\":1,\"vote_option\":\"crave\"}");
 							System.out.println(reader.readLine());
 						}
 			else
