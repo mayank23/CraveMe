@@ -337,7 +337,7 @@ class Work{
 				int meal_id = request.getInt("meal_id");
 				if(request.get("vote_option").equals("crave"))
 				{
-					SQL += " craves = crave+1 ";
+					SQL += " craves = craves+1 ";
 				}
 				else
 					if(request.getString("vote_option").equals("not"))
