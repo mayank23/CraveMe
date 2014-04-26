@@ -73,7 +73,7 @@ class Pool extends Thread{
 						 if(json.getString("option").equals("photo_upload"))
 						 {
 							 
-							 // nameing file
+							 // naming file
 							 String file_name = "photos/photos_"+(int)(Math.random()*2234211)+"_"+(int)(Math.random()*22342111)+"_"+(int)(Math.random()*22342)+"_"+json.getString("file_name");
 							 System.out.println("file_name= "+file_name);
 							 
