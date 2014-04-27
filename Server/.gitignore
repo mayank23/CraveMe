@@ -1,0 +1,11 @@
+#java files
+*.class
+#image files
+*.png
+*.jpg
+*.gif
+*.jpeg
+*.bmp
+#text files
+*.txt
+

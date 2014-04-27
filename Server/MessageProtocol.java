@@ -25,9 +25,12 @@ public MessageProtocol(String message)
 }
 public JSONObject parseMessage() throws Exception
 {
-	
+	// parse the message.
 	JSONObject json = new JSONObject(this.message);
 	String option = json.get("option").toString();
+	
+	
+	// what to do
 	if(option.equals("get_all_recipes"))
 	{
 		JSONObject output = Work.recipes_all(json);
@@ -45,6 +48,25 @@ public JSONObject parseMessage() throws Exception
 				JSONObject output  = Work.postMeal(json);
 				return output;
 			}
+			else
+				if(option.equals("get_single_meal"))
+				{
+					JSONObject output = Work.getSingleMeal(json);
+					return output;
+				}
+				else
+					if(option.equals("vote_meal"))
+					{
+						JSONObject output = Work.voteMeal(json);
+						return output;
+					}
+					else
+						if(option.equals("vote_recipe"))
+						{
+							JSONObject output = Work.voteRecipe(json);
+							return output;
+						}
+		
 			// else
 			return null;
 	
@@ -103,6 +125,8 @@ class Work{
 			current.put("time", result.getInt("time"));
 			current.put("photo_url", result.getString("photo_url"));
 			current.put("user_id", result.getInt("user_id"));
+			current.put("craves",result.getInt("craves"));
+			current.put("nots", result.getInt("nots"));
 			recipes.put(current);
 			
 		}
@@ -258,5 +282,131 @@ class Work{
 	
 		
 	}
-	 
+	public static JSONObject getSingleMeal(JSONObject request)
+	{
+		int error = ConnectToDB();
+		if(error == -1)
+		{// error in connection to mysql
+			return null;
+		}
+		// else proceed
+		try{
+			int meal_id = request.getInt("meal_id");
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM meals WHERE id=?");
+			stmt.setInt(1,meal_id);
+			ResultSet rs = stmt.executeQuery();
+			JSONObject output = new JSONObject();
+			if(rs.next())
+			{
+				output.put("id", rs.getInt(1));
+				output.put("photo_url", rs.getString(2));
+				output.put("description", rs.getString(3));
+				output.put("recipe_id", rs.getInt(4));
+				output.put("category", rs.getString(5));
+				output.put("views", rs.getInt(6));
+				output.put("title", rs.getString(7));
+				output.put("craves"	, rs.getInt(8));
+				output.put("nots", rs.getInt(9));
+				output.put("user_name", rs.getString(10));
+			
+			}
+			
+			CloseConnection();
+			return output;
+		}
+		catch(Exception e)
+		{
+			
+			CloseConnection();
+			return null;
+
+		}
+		
+	}
+	
+	 // voting on meals function
+	public static JSONObject voteMeal(JSONObject request)
+	{
+		int error = ConnectToDB();
+		if(error == -1)
+		{
+			return null;
+		}
+		else
+		{
+			// proceed
+			try{
+				String SQL = "UPDATE meals SET ";
+				int meal_id = request.getInt("meal_id");
+				if(request.get("vote_option").equals("crave"))
+				{
+					SQL += " craves = craves+1 ";
+				}
+				else
+					if(request.getString("vote_option").equals("not"))
+					{
+						SQL +=" nots = nots+1 ";
+					}
+				SQL += " WHERE id=?";
+				System.out.println(SQL);
+				PreparedStatement stmt = conn.prepareStatement(SQL);
+				stmt.setInt(1, meal_id);
+				stmt.executeUpdate();
+				JSONObject response = new JSONObject();
+				response.put("response", "success");
+				CloseConnection();
+				return response;
+			}catch(Exception e){
+				e.printStackTrace();
+				CloseConnection();
+				return null;
+			}
+		}
+		
+		
+		
+	}
+	// voting on recipes
+	 // voting function
+		public static JSONObject voteRecipe(JSONObject request)
+		{
+			int error = ConnectToDB();
+			if(error == -1)
+			{
+				return null;
+			}
+			else
+			{
+				// proceed
+				try{
+					String SQL = "UPDATE recipes SET ";
+					int recipe_id = request.getInt("recipe_id");
+					if(request.get("vote_option").equals("crave"))
+					{
+						SQL += " craves = craves+1 ";
+					}
+					else
+						if(request.getString("vote_option").equals("not"))
+						{
+							SQL +=" nots = nots+1 ";
+						}
+					SQL += " WHERE id=?";
+					System.out.println(SQL);
+					PreparedStatement stmt = conn.prepareStatement(SQL);
+					stmt.setInt(1, recipe_id);
+					stmt.executeUpdate();
+					JSONObject response = new JSONObject();
+					response.put("response", "success");
+					CloseConnection();
+					return response;
+				}catch(Exception e){
+					e.printStackTrace();
+					CloseConnection();
+					return null;
+				}
+			}
+			
+			
+			
+		}
 }

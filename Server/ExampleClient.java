@@ -12,7 +12,7 @@ public static void main(String[] args){
 if(args.length<3)
 {
 	
-System.out.println("Usage: java Client portnum hostname option(register_user,upload_photo,get_all_recipes,post_meal)");
+System.out.println("Usage: java Client portnum hostname option(register_user,upload_photo,get_all_recipes,post_meal,get_meal,vote_meal,vote_recipe)");
 System.exit(1);
 }
 int port = Integer.parseInt(args[0]);
@@ -27,14 +27,10 @@ if(args[2].equals("upload_photo")){
 OutputStream out = socket.getOutputStream();
 
 // now actually write the file
-int count=0;
-byte[] buffer = new byte[1024];
 File file = new File("test.jpg");
 FileInputStream in = new FileInputStream("test.jpg");
-
-long length = file.length();
-
-String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.jpg\",\"length\":"+length+",\"meal_id\":1}";
+// need to send option, file name, and meal_id to upload to server
+String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.jpg\",\"meal_id\":1}";
 pw.println(x);
 
 IOUtils.copy(in, out);
@@ -56,14 +52,36 @@ else
 		if(args[2].equals("get_all_recipes"))
 		{
 			pw.println("{\"option\":\"get_all_recipes\"}");
-
+			System.out.println(reader.readLine());
 		}
 		else
 			if(args[2].equals("post_meal"))
 			{
 				pw.println("{\"option\":\"post_meal\",\"user_name\":\"mayank23\",\"title\":\"best meal in the world\",\"description\":\"fifa meal night\",\"category\":\"american\",\"recipe_id\":-1}");
+System.out.println(reader.readLine());
 
 			}
+			else
+				if(args[2].equals("get_meal"))
+				{
+					pw.println("{\"option\":\"get_single_meal\",\"meal_id\":1}");
+					System.out.println(reader.readLine());
+					
+				}
+				else
+					if(args[2].equals("vote_meal"))
+					{
+						// vote on a mean. 
+						pw.println("{\"option\":\"vote_meal\",\"meal_id\":1,\"vote_option\":\"not\"}");
+						System.out.println(reader.readLine());
+					}
+					else
+						if(args[2].equals("vote_recipe"))
+						{
+							// vote on recipe
+							pw.println("{\"option\":\"vote_recipe\",\"recipe_id\":1,\"vote_option\":\"crave\"}");
+							System.out.println(reader.readLine());
+						}
 			else
 			{
 				System.out.println("unrecognized option!");
