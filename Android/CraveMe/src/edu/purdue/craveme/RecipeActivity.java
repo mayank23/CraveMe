@@ -26,6 +26,7 @@ public class RecipeActivity extends ActionBarActivity {
 	        fragmentManager.beginTransaction()
 	                .replace(R.id.container, RecipeFragment.newInstance(recipeId, recipeName))
 	                .commit();
+	        getSupportActionBar().setTitle(recipeName);
 		}
 		else {
 			throw new RuntimeException("Unknown intent type to RecipeActivity: " + i.getAction());
