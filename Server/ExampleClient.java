@@ -82,6 +82,12 @@ System.out.println(reader.readLine());
 							pw.println("{\"option\":\"vote_recipe\",\"recipe_id\":1,\"vote_option\":\"crave\"}");
 							System.out.println(reader.readLine());
 						}
+						else
+							if(args[2].equals("upload_recipe"))
+							{
+								pw.println("{ \"option\":\"upload_recipe\", \"ingredients\" : \"ingredients\",\"steps\":\"steps\",\"user_id\":-1,\"title\":\"title\" ,\"time\":15}");
+								System.out.println(reader.readLine());
+							}
 			else
 			{
 				System.out.println("unrecognized option!");

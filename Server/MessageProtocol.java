@@ -66,6 +66,12 @@ public JSONObject parseMessage() throws Exception
 							JSONObject output = Work.voteRecipe(json);
 							return output;
 						}
+						else
+							if(option.equals("upload_recipe"))
+							{
+								JSONObject output = Work.uploadRecipe(json);
+								return output;
+							}
 		
 			// else
 			return null;
@@ -114,14 +120,17 @@ class Work{
 		JSONObject json = new JSONObject();
 		JSONArray recipes = new JSONArray();
 		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM recipes");
+		
 		ResultSet result  =stmt.executeQuery();
 		while(result.next())
 		{
 			JSONObject current = new JSONObject();
 			current.put("id",result.getInt("id"));
 			current.put("title", result.getString("title"));
-			current.put("steps", result.getString("steps"));
-			current.put("ingredients", result.getString("ingredients"));
+			JSONArray steps = new JSONArray(result.getString("steps"));
+			current.put("steps", steps);
+			JSONArray ingredients = new JSONArray(result.getString("ingredients"));
+			current.put("ingredients", ingredients);
 			current.put("time", result.getInt("time"));
 			current.put("photo_url", result.getString("photo_url"));
 			current.put("user_id", result.getInt("user_id"));
@@ -408,5 +417,43 @@ class Work{
 			
 			
 			
+		}
+		// upload a recipe
+		public static JSONObject uploadRecipe(JSONObject request)
+		{
+			int error = ConnectToDB();
+			if(error == -1)
+			{
+				return null;
+			}
+			try{
+				
+				PreparedStatement stmt = conn.prepareStatement("INSERT INTO recipes (user_id, steps, photo_url, ingredients, title, time) VALUES (?,?,?,?,?,?) ");
+				stmt.setInt(1, request.getInt("user_id"));
+				stmt.setString(2, request.getString("steps"));
+				stmt.setString(3, request.getString("photo_url"));
+				stmt.setString(4, request.getString("ingredients"));
+				stmt.setString(5, request.getString("title"));
+				stmt.setInt(6, request.getInt("time"));
+				stmt.executeUpdate();
+				CloseConnection();
+				JSONObject response = new JSONObject();
+				response.put("response", "success");
+				return response;
+				
+			}catch(Exception e)
+			{
+				e.printStackTrace();
+				CloseConnection();
+				JSONObject response = new JSONObject();
+				try {
+					response.put("response", e.toString());
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				return response;
+			}
+
 		}
 }
