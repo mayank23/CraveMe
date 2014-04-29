@@ -94,6 +94,7 @@ class Work{
 			return 0;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
+			System.out.println("error for db");
 			e.printStackTrace();
 			return -1;
 		}
@@ -130,6 +131,7 @@ class Work{
 			JSONArray steps = new JSONArray(result.getString("steps"));
 			current.put("steps", steps);
 			JSONArray ingredients = new JSONArray(result.getString("ingredients"));
+			
 			current.put("ingredients", ingredients);
 			current.put("time", result.getInt("time"));
 			current.put("photo_url", result.getString("photo_url"));
