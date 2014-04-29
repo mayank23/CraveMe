@@ -432,9 +432,9 @@ class Work{
 				
 				PreparedStatement stmt = conn.prepareStatement("INSERT INTO recipes (user_id, steps, photo_url, ingredients, title, time) VALUES (?,?,?,?,?,?) ");
 				stmt.setInt(1, request.getInt("user_id"));
-				stmt.setString(2, request.getString("steps"));
+				stmt.setString(2, request.getJSONArray("steps").toString());
 				stmt.setString(3, request.getString("photo_url"));
-				stmt.setString(4, request.getString("ingredients"));
+				stmt.setString(4, request.getJSONArray("ingredients").toString());
 				stmt.setString(5, request.getString("title"));
 				stmt.setInt(6, request.getInt("time"));
 				stmt.executeUpdate();

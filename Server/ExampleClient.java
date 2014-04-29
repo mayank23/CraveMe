@@ -85,7 +85,7 @@ System.out.println(reader.readLine());
 						else
 							if(args[2].equals("upload_recipe"))
 							{
-								pw.println("{ \"option\":\"upload_recipe\", \"ingredients\" : \"[\"food1\"]\",\"steps\":\"[\"step1\"]\",\"user_id\":-1,\"title\":\"title\" ,\"time\":15,\"photo_url\":\"http://url.com\"}");
+								pw.println("{\"option\":\"upload_recipe\", \"ingredients\" : [\"food1\"],\"steps\":[\"step1\"],\"user_id\":-1,\"title\":\"title\" ,\"time\":15,\"photo_url\":\"http://url.com\"}");
 								System.out.println(reader.readLine());
 							}
 			else
