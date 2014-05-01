@@ -3,12 +3,13 @@ Created on Apr 15, 2014
 
 @author: Dan
 
+SERVER: data.cs.purdue.edu:9012
 DB: data.cs.purdue.edu:50399
 '''
 
 import string, urllib2, re, sys
-#import MySQLdb
 import httplib
+#import MySQLdb
 
 def getPageRecipes(letter, page):
     recipes = []
@@ -83,31 +84,28 @@ def sendData(title, time, photo, ingredients, directions):
     
     directions = removeTags(directions)
     ingredients = removeTags(ingredients)
+    title = removeTags(title)
+    photo = removeTags(photo)
     
-    import socket
-    socket.getaddrinfo('localhost', 8080)
-    
-    conn = httplib.HTTPConnection('www.data.cs.purdue.edu', 9000, timeout=10)
+    conn = httplib.HTTPConnection("data.cs.purdue.edu", 9012, timeout=10)
     data = "{\"option\":\"upload_recipe\", \"ingredients\":%s, \"steps\":%s, \"user_id\":-1, \"title\":\"%s\", \"time\":%d, \"photo_url\":\"%s\"}" % \
             (ingredients, directions, title, time, photo)
     print data
-    #try:
-    conn.send(data)
-    print "Sent!"
-    '''
+    try:
+        conn.send(data)
+        print "Sent!"
     except:
-        print "Sending FAILED -- Rolling back changes"
+        print "Sending FAILED"
         print sys.exc_info()
-    '''
     conn.close()
     
     ''' OLD DB CONNECTION '''
-    #db = MySQLdb.connect(host="data.cs.purdue.edu", port=50399, user="my_user", passwd="abc", db="lab6")
-    #cursor = db.cursor()    
-    #sql = "INSERT INTO recipes (user_id, steps, photo_url, ingredients, title, time) VALUES (-1, \"%s\", \"%s\", \"%s\", \"%s\", %d)" % \
-    #        (directions, photo, ingredients, title, time)
-    #print sql
     '''
+    db = MySQLdb.connect(host="data.cs.purdue.edu", port=50399, user="my_user", passwd="abc", db="lab6")
+    cursor = db.cursor()    
+    sql = "INSERT INTO recipes (user_id, steps, photo_url, ingredients, title, time) VALUES (-1, \"%s\", \"%s\", \"%s\", \"%s\", %d)" % \
+            (directions, photo, ingredients, title, time)
+    print sql
     try:
         print "Sending data"
         cursor.execute(sql)
@@ -119,8 +117,8 @@ def sendData(title, time, photo, ingredients, directions):
         print sql
         db.rollback()
         print "Revert complete"
+    db.close()
     '''
-    #db.close()
     
 def removeTags(text):
     TAG_RE = re.compile(r'<[^>]+>')
@@ -153,5 +151,3 @@ if __name__ == '__main__':
                     continue
                 sendData(title, time, photo, ingredients, directions)
                 break
-            break
-        break
