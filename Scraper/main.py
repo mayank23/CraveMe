@@ -6,7 +6,9 @@ Created on Apr 15, 2014
 DB: data.cs.purdue.edu:50399
 '''
 
-import string, urllib2, re, MySQLdb, sys
+import string, urllib2, re, sys
+#import MySQLdb
+import httplib
 
 def getPageRecipes(letter, page):
     recipes = []
@@ -74,13 +76,38 @@ def getItems(url):
     return title, time, photo, ingredients, directions[1:]
     
 def sendData(title, time, photo, ingredients, directions):
-    directions = str(directions).replace("\"", "'")
-    ingredients = str(ingredients).replace("\"", "'")
+    directions = str(directions).replace("\\\"", "'")
+    ingredients = str(ingredients).replace("\\\"", "'")
+    directions = str(directions).replace("\\\"", "\"")
+    ingredients = str(ingredients).replace("\\\"", "\"")
     
-    db = MySQLdb.connect(host="data.cs.purdue.edu", port=50399, user="my_user", passwd="abc", db="lab6")
-    cursor = db.cursor()    
-    sql = "INSERT INTO recipes (user_id, steps, photo_url, ingredients, title, time) VALUES (-1, \"%s\", \"%s\", \"%s\", \"%s\", %d)" % \
-            (directions, photo, ingredients, title, time)
+    directions = removeTags(directions)
+    ingredients = removeTags(ingredients)
+    
+    import socket
+    socket.getaddrinfo('localhost', 8080)
+    
+    conn = httplib.HTTPConnection('www.data.cs.purdue.edu', 9000, timeout=10)
+    data = "{\"option\":\"upload_recipe\", \"ingredients\":%s, \"steps\":%s, \"user_id\":-1, \"title\":\"%s\", \"time\":%d, \"photo_url\":\"%s\"}" % \
+            (ingredients, directions, title, time, photo)
+    print data
+    #try:
+    conn.send(data)
+    print "Sent!"
+    '''
+    except:
+        print "Sending FAILED -- Rolling back changes"
+        print sys.exc_info()
+    '''
+    conn.close()
+    
+    ''' OLD DB CONNECTION '''
+    #db = MySQLdb.connect(host="data.cs.purdue.edu", port=50399, user="my_user", passwd="abc", db="lab6")
+    #cursor = db.cursor()    
+    #sql = "INSERT INTO recipes (user_id, steps, photo_url, ingredients, title, time) VALUES (-1, \"%s\", \"%s\", \"%s\", \"%s\", %d)" % \
+    #        (directions, photo, ingredients, title, time)
+    #print sql
+    '''
     try:
         print "Sending data"
         cursor.execute(sql)
@@ -92,8 +119,13 @@ def sendData(title, time, photo, ingredients, directions):
         print sql
         db.rollback()
         print "Revert complete"
-    db.close()
+    '''
+    #db.close()
     
+def removeTags(text):
+    TAG_RE = re.compile(r'<[^>]+>')
+    return TAG_RE.sub('', text)
+
 if __name__ == '__main__':
     for letter in string.ascii_lowercase:
         print "------------ Letter " + str(letter)
@@ -107,6 +139,7 @@ if __name__ == '__main__':
                         continue
                     if (photo == "no photo"):
                         continue
+                    '''
                     print title
                     print "Time (minutes): " + str(time)
                     print "Photo: " + str(photo)
@@ -114,8 +147,11 @@ if __name__ == '__main__':
                     for ingredient in ingredients: print ingredient
                     print "Directions (" + str(len(directions)) + "):"
                     for direction in directions: print direction
+                    '''
                     lastItem = title
                 except:
                     continue
                 sendData(title, time, photo, ingredients, directions)
                 break
+            break
+        break
