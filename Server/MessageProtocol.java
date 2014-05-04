@@ -29,7 +29,11 @@ public JSONObject parseMessage() throws Exception
 	JSONObject json = new JSONObject(this.message);
 	String option = json.get("option").toString();
 	
-	
+	if(option.equals("login"))
+	{
+		JSONObject output = Work.login(json);
+		
+	}else
 	// what to do
 	if(option.equals("get_all_recipes"))
 	{
@@ -179,15 +183,26 @@ class Work{
 				String user_name = request.getString("user_name");
 				String email = request.getString("email");
 				String password = request.getString("password");
-				PreparedStatement stmt = conn.prepareStatement("INSERT INTO user(user_name,email,password) VALUES (?,?,?)");
+				PreparedStatement stmt = conn.prepareStatement("INSERT INTO user(user_name,email,password) VALUES (?,?,?)",Statement.RETURN_GENERATED_KEYS);
 				stmt.setString(1, user_name);
 				stmt.setString(2, email);
 				stmt.setString(3, password);
 				stmt.executeUpdate();
+				// get the generated id of the user
+				// get the if of the user.
 				JSONObject output = new JSONObject();
 				output.put("response", "success");
 				output.put("email", email);
 				output.put("user_name", user_name);
+				ResultSet keys;
+				keys = stmt.getGeneratedKeys();
+				if(keys.next())
+				{
+					output.put("user_id", keys.getInt("id"));
+				}else{
+					return null;
+				}
+				
 				return output;
 				}
 				catch(Exception e){
@@ -458,4 +473,61 @@ class Work{
 			}
 
 		}
+// login user
+		public static JSONObject login(JSONObject request)
+		{
+			int error = ConnectToDB();
+			JSONObject output = new JSONObject();
+			if(error ==-1)
+			{
+				System.out.println("cannot connect to db");
+				return null;
+			}else{
+				try{
+					
+					// actual login
+					String username = request.getString("user_name");
+					String password = request.getString("password");
+					PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE username=? AND password=?");
+					ResultSet result =stmt.executeQuery();
+					if(result.next())
+					{
+						
+						output.put("username", result.getString("user_name"));
+						output.put("email", result.getString("email"));
+						output.put("user_id", result.getInt("id"));
+						output.put("response", "success");
+						System.out.println(output.toString());
+						return output;
+					}else{
+						System.out.println("user with user_name: "+username+" not found");
+						output.put("response", "user not found");
+						return output;
+					}
+					
+					
+				
+					
+					
+					
+					
+					
+				}catch(Exception e)
+				{
+					e.printStackTrace();
+					try {
+						output.put("response", e.toString());
+					} catch (JSONException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					return output;
+				}
+			}
+			
+
+		}
+
+
+
 }
