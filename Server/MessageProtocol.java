@@ -32,6 +32,7 @@ public JSONObject parseMessage() throws Exception
 	if(option.equals("login"))
 	{
 		JSONObject output = Work.login(json);
+		return output;
 		
 	}else
 	// what to do
