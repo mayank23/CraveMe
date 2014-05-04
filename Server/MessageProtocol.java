@@ -175,6 +175,7 @@ class Work{
 			if(error == -1)
 			{
 				// error in connection.
+				System.out.println("error in connect to db");
 				return null;
 			}
 			else{
@@ -207,6 +208,7 @@ class Work{
 				}
 				catch(Exception e){
 					// error
+					e.printStackTrace();
 				}
 				CloseConnection();
 				return null;
@@ -498,10 +500,12 @@ class Work{
 						output.put("user_id", result.getInt("id"));
 						output.put("response", "success");
 						System.out.println(output.toString());
+						CloseConnection();
 						return output;
 					}else{
 						System.out.println("user with user_name: "+username+" not found");
 						output.put("response", "user not found");
+						CloseConnection();
 						return output;
 					}
 					
@@ -514,6 +518,7 @@ class Work{
 					
 				}catch(Exception e)
 				{
+					CloseConnection();
 					e.printStackTrace();
 					try {
 						output.put("response", e.toString());
