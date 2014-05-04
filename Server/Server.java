@@ -113,7 +113,7 @@ class Pool extends Thread{
 						 else
 						if(json.getString("option").equals("get_photo"))
 						{
-								
+								System.out.println("getting photo\n");
 								 String server_file_path = json.getString("server_file_path");
 								 // get the photo and write it to the socket.
 								 synchronized(this){

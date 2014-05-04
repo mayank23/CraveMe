@@ -327,16 +327,16 @@ class Work{
 			JSONObject output = new JSONObject();
 			if(rs.next())
 			{
-				output.put("id", rs.getInt(1));
-				output.put("photo_url", rs.getString(2));
-				output.put("description", rs.getString(3));
-				output.put("recipe_id", rs.getInt(4));
-				output.put("category", rs.getString(5));
-				output.put("views", rs.getInt(6));
-				output.put("title", rs.getString(7));
-				output.put("craves"	, rs.getInt(8));
-				output.put("nots", rs.getInt(9));
-				output.put("user_name", rs.getString(10));
+				output.put("id", rs.getInt("id"));
+				output.put("photo_url", rs.getString("photo_url"));
+				output.put("description", rs.getString("description"));
+				output.put("recipe_id", rs.getInt("recipe_id"));
+				output.put("category", rs.getString("category"));
+				output.put("views", rs.getInt("views"));
+				output.put("title", rs.getString("title"));
+				output.put("craves"	, rs.getInt("craves"));
+				output.put("nots", rs.getInt("nots"));
+				output.put("user_name", rs.getString("user_name"));
 			
 			}
 			
@@ -345,7 +345,7 @@ class Work{
 		}
 		catch(Exception e)
 		{
-			
+		e.printStackTrace();	
 			CloseConnection();
 			return null;
 

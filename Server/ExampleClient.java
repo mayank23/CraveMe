@@ -42,12 +42,15 @@ socket.close();
 else
 	if(args[2].equals("get_photo"))
 	{
+		// downloads photo//
 		pw.println("{\"option\":\"get_photo\",\"server_file_path\":\"photos/photos_2101375_10314433_5858_test.jpg\"}");
 		File file = new File("got_photo.jpg");
 		FileOutputStream outs = new FileOutputStream(file);
 		InputStream input = socket.getInputStream();
 		IOUtils.copy(input, outs);
 		outs.close();
+		socket.shutdownInput();
+		
 	}
 else
 	if(args[2].equals("register_user"))
@@ -80,7 +83,7 @@ else
 				}else
 				if(args[2].equals("get_meal"))
 				{
-					pw.println("{\"option\":\"get_single_meal\",\"meal_id\":1}");
+					pw.println("{\"option\":\"get_single_meal\",\"meal_id\":3}");
 					System.out.println("from server:"+reader.readLine());
 					
 				}
