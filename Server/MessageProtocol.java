@@ -54,6 +54,12 @@ public JSONObject parseMessage() throws Exception
 				return output;
 			}
 			else
+				if(option.equals("get_all_meals"))
+				{
+					JSONObject output = Work.getAllMeals(json);
+					return output;
+				}
+			else
 				if(option.equals("get_single_meal"))
 				{
 					JSONObject output = Work.getSingleMeal(json);
@@ -311,6 +317,8 @@ class Work{
 	
 		
 	}
+	
+	
 	public static JSONObject getSingleMeal(JSONObject request)
 	{
 		int error = ConnectToDB();
@@ -538,6 +546,44 @@ class Work{
 
 		}
 
-
+public static JSONObject getAllMeals(JSONObject request)
+{
+	
+	ConnectToDB();
+	JSONObject output = new JSONObject();
+	try{
+		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM meals");
+		ResultSet result = stmt.executeQuery();
+		JSONArray array = new JSONArray();
+		while(result.next())
+		{
+			JSONObject current = new JSONObject();
+			current.put("id", result.getInt("id"));
+			current.put("photo_url", result.getString("photo_url"));
+			current.put("craves", result.getInt("craves"));
+			current.put("user_name", result.getString("user_name"));
+			current.put("title", result.getString("title"));
+			current.put("description", result.getString("description"));
+			current.put("nots", result.getInt("nots"));
+			array.put(current);
+		}
+		System.out.println("sending to client:\n\n:"+ output.toString());
+		return output;
+	}
+	catch(Exception e)
+	{
+		e.printStackTrace();
+		try {
+			output.put("response", e.toString());
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return output;
+		
+	}
+	
+	
+}
 
 }

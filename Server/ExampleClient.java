@@ -88,6 +88,12 @@ else
 					
 				}
 				else
+					if(args[2].equals("get_all_meals"))
+					{
+						pw.println("{\"option\":\"get_all_meals\"}");
+						System.out.println(reader.readLine());
+					}
+				else
 					if(args[2].equals("vote_meal"))
 					{
 						// vote on a mean. 
