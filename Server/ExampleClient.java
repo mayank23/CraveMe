@@ -30,7 +30,7 @@ OutputStream out = socket.getOutputStream();
 File file = new File("test.jpg");
 FileInputStream in = new FileInputStream("test.jpg");
 // need to send option, file name, and meal_id to upload to server
-String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.jpg\",\"meal_id\":1}";
+String x = "{\"option\":\"photo_upload\",\"file_name\":\"test.jpg\",\"meal_id\":3}";
 pw.println(x);
 
 IOUtils.copy(in, out);
