@@ -491,7 +491,7 @@ class Work{
 					// actual login
 					String username = request.getString("user_name");
 					String password = request.getString("password");
-					PreparedStatement stmt = conn.prepareStatement("SELECT * FROM user WHERE username=? AND password=?");
+					PreparedStatement stmt = conn.prepareStatement("SELECT * FROM user WHERE user_name=? AND password=?");
 					stmt.setString(1, username);
 					stmt.setString(2, password);
 					ResultSet result =stmt.executeQuery();
