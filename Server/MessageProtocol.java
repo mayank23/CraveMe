@@ -199,7 +199,7 @@ class Work{
 				keys = stmt.getGeneratedKeys();
 				if(keys.next())
 				{
-					output.put("user_id", keys.getInt("id"));
+					output.put("user_id", keys.getInt(1));
 				}else{
 					return null;
 				}
@@ -490,7 +490,7 @@ class Work{
 					// actual login
 					String username = request.getString("user_name");
 					String password = request.getString("password");
-					PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE username=? AND password=?");
+					PreparedStatement stmt = conn.prepareStatement("SELECT * FROM user WHERE username=? AND password=?");
 					ResultSet result =stmt.executeQuery();
 					if(result.next())
 					{
