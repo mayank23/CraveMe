@@ -66,12 +66,12 @@ System.out.println(reader.readLine());
 				if(args[2].equals("login"))
 				{
 					pw.println("{\"option\":\"login\",\"user_name\":\"mayank23\",\"password\":\"dsf\"}");
-					System.out.println(reader.readLine());
+					System.out.println("from server:\n\n"+reader.readLine());
 				}else
 				if(args[2].equals("get_meal"))
 				{
 					pw.println("{\"option\":\"get_single_meal\",\"meal_id\":1}");
-					System.out.println(reader.readLine());
+					System.out.println("from server:"+reader.readLine());
 					
 				}
 				else
