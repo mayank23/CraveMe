@@ -40,6 +40,16 @@ System.out.println(reader.readLine());
 socket.close();
 }
 else
+	if(args[2].equals("get_photo"))
+	{
+		pw.println("{\"option\":\"get_photo\",\"server_file_path\":\"photos/photos_2101375_10314433_5858_test.jpg\"}");
+		File file = new File("got_photo.jpg");
+		FileOutputStream outs = new FileOutputStream(file);
+		InputStream input = socket.getInputStream();
+		IOUtils.copy(input, outs);
+		outs.close();
+	}
+else
 	if(args[2].equals("register_user"))
 	{
 
@@ -58,7 +68,7 @@ else
 			if(args[2].equals("post_meal"))
 			{
 				pw.println("{\"option\":\"post_meal\",\"user_name\":\"mayank23\",\"title\":\"best meal in the world\",\"description\":\"fifa meal night\",\"category\":\"american\",\"recipe_id\":-1}");
-System.out.println(reader.readLine());
+				System.out.println(reader.readLine());
 
 			}
 			else
