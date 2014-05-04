@@ -476,6 +476,7 @@ class Work{
 
 		}
 // login user
+		// needs the username and password
 		public static JSONObject login(JSONObject request)
 		{
 			int error = ConnectToDB();
@@ -491,7 +492,10 @@ class Work{
 					String username = request.getString("user_name");
 					String password = request.getString("password");
 					PreparedStatement stmt = conn.prepareStatement("SELECT * FROM user WHERE username=? AND password=?");
+					stmt.setString(1, username);
+					stmt.setString(2, password);
 					ResultSet result =stmt.executeQuery();
+					
 					if(result.next())
 					{
 						
