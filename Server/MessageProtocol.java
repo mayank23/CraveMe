@@ -567,6 +567,7 @@ public static JSONObject getAllMeals(JSONObject request)
 			current.put("nots", result.getInt("nots"));
 			array.put(current);
 		}
+		output.put("meals", array);
 		System.out.println("sending to client:\n\n:"+ output.toString());
 		return output;
 	}
