@@ -29,6 +29,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
 import edu.purdue.craveme.net.RecipeParser;
@@ -36,8 +37,11 @@ import edu.purdue.craveme.provider.CraveContract;
 import edu.purdue.craveme.provider.CraveContract.Direction;
 import edu.purdue.craveme.provider.CraveContract.Ingredient;
 
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -46,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -121,6 +126,10 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
     // Constants representing sync options
     private static final String REQUEST_OPTION = "option";
     private static final String OPTION_RECIPES = "get_all_recipes";
+    private static final String OPTION_PHOTO = "get_photo";
+    private static final String SERVER_FILE_PATH = "server_file_path";
+    
+    private static final byte[] PHOTO_BUF = new byte[4096];
 
     /**
      * Constructor. Obtains handle to content resolver for later use.
@@ -271,15 +280,15 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Add new items
         for (RecipeParser.Recipe e : entryMap.values()) {
             Log.i(TAG, "Scheduling insert: entry_id=" + e.id);
-            //TODO: create local photo
+        	String ext = e.photoUrl.substring(e.photoUrl.lastIndexOf('.'));
             batch.add(ContentProviderOperation.newInsert(CraveContract.Recipe.CONTENT_URI)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_RECIPE_ID, e.id)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_USER_ID, e.userId)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_TITLE, e.title)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_LENGTH, e.time)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_PIC_URL, e.photoUrl)
+                    .withValue(CraveContract.Recipe.COLUMN_NAME_PIC_PATH, CraveContract.BASE_CONTENT_URI.buildUpon().appendEncodedPath("recipe_" + e.id + ext).build().toString())
                     .build());
-            String recipeIdStr = Integer.toString(e.id);
             for(String ingredient : e.ingredients) {
             	Log.i(TAG, "Scheduling insert: name=" + ingredient);
             	batch.add(ContentProviderOperation.newInsert(Ingredient.CONTENT_URI)
@@ -306,6 +315,20 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
                 false);                         // IMPORTANT: Do not sync to network
         // This sample doesn't support uploads, but if *your* code does, make sure you set
         // syncToNetwork=false in the line above to prevent duplicate syncs.
+        for(RecipeParser.Recipe e : entryMap.values()) {
+        	try {
+            	String ext = e.photoUrl.substring(e.photoUrl.lastIndexOf('.'));
+            	ParcelFileDescriptor fd = mContentResolver.openFileDescriptor(CraveContract.BASE_CONTENT_URI.buildUpon().appendEncodedPath("recipe_" + e.id + ext).build(), "w");
+            	saveRecipePhoto(e.photoUrl, "recipe_" + e.id + ext, fd);
+            }
+            catch(Exception ex) {
+            	ex.printStackTrace();
+            }
+        }
+        mContentResolver.notifyChange(
+                CraveContract.Photos.CONTENT_URI, // URI where data was modified
+                null,                           // No local observer
+                false);                         // IMPORTANT: Do not sync to network
     }
 
     /**
@@ -334,5 +357,30 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
     	wr.append('\n');
     	wr.flush();
     	return s.getInputStream();
+    }
+    
+    private InputStream requestPhoto(Socket s, String path) throws IOException, JSONException {
+    	OutputStreamWriter wr = new OutputStreamWriter(s.getOutputStream());
+    	JSONObject request = new JSONObject();
+    	Log.i("TEST", path);
+    	request.put(REQUEST_OPTION, OPTION_PHOTO);
+    	request.put(SERVER_FILE_PATH, path);
+    	wr.write(request.toString());
+    	wr.append('\n');
+    	wr.flush();
+    	return s.getInputStream();
+    }
+    
+    private void saveRecipePhoto(String path, String file, ParcelFileDescriptor fd) throws IOException {
+    	HttpURLConnection conn = (HttpURLConnection) new URL(path).openConnection();
+    	OutputStream wr = new FileOutputStream(fd.getFileDescriptor());
+    	InputStream rd = conn.getInputStream();
+    	int read;
+    	Log.v("writing", path + " to " + file);
+    	while((read = rd.read(PHOTO_BUF)) != -1) {
+    		wr.write(PHOTO_BUF, 0, read);
+    	}
+    	conn.disconnect();
+    	fd.close();
     }
 }

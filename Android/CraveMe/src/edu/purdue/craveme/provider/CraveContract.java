@@ -49,6 +49,8 @@ public class CraveContract {
     private static final String PATH_INGREDIENTS = "ingredients";
     
     private static final String PATH_DIRECTIONS = "directions";
+    
+    private static final String PATH_PHOTOS = "photos";
 
     /**
      * Columns supported by "entries" records.
@@ -175,5 +177,10 @@ public class CraveContract {
          * ID of recipe
          */
         public static final String COLUMN_NAME_RECIPE_ID = "recipe_id";
+    }
+    
+    public static class Photos {
+    	public static final Uri CONTENT_URI =
+    			BASE_CONTENT_URI.buildUpon().appendPath(PATH_PHOTOS).build();
     }
 }

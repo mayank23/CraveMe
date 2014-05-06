@@ -16,6 +16,10 @@
 
 package edu.purdue.craveme.provider;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
@@ -24,6 +28,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.util.Log;
 import edu.purdue.craveme.common.db.SelectionBuilder;
 import edu.purdue.craveme.provider.CraveContract.Direction;
@@ -294,6 +300,7 @@ public class CraveProvider extends ContentProvider {
                         .where(CraveContract.Ingredient._ID + "=?", id)
                         .where(selection, selectionArgs)
                         .update(db, values);
+                
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -302,6 +309,36 @@ public class CraveProvider extends ContentProvider {
         assert ctx != null;
         ctx.getContentResolver().notifyChange(uri, null, false);
         return count;
+    }
+    
+    //http://stackoverflow.com/questions/3883211/how-to-store-large-blobs-in-an-android-content-provider
+    @Override
+    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+    	File root = new File(Environment.getExternalStorageDirectory(), 
+                "/photos");
+        root.mkdirs();
+        File path = new File(root, uri.getEncodedPath());
+        // So, if the uri was content://com.example.myapp/some/data.xml,
+        // we'll end up accessing /Android/data/com.example.myapp/cache/some/data.xml
+
+        int imode = 0;
+        if (mode.contains("w")) {
+                imode |= ParcelFileDescriptor.MODE_WRITE_ONLY;
+                path.delete();
+                if (!path.exists()) {
+                    try {
+                    	Log.v("creating", path.getAbsolutePath());
+                        path.createNewFile();
+                    } catch (IOException e) {
+                        // TODO decide what to do about it, whom to notify...
+                        e.printStackTrace();
+                    }
+                }
+        }
+        if (mode.contains("r")) imode |= ParcelFileDescriptor.MODE_READ_ONLY;
+        if (mode.contains("+")) imode |= ParcelFileDescriptor.MODE_APPEND;        
+
+        return ParcelFileDescriptor.open(path, imode);
     }
 
     /**

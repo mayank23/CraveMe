@@ -3,9 +3,12 @@ package edu.purdue.craveme;
 import edu.purdue.craveme.provider.CraveContract;
 import edu.purdue.craveme.provider.CraveContract.Direction;
 import edu.purdue.craveme.provider.CraveContract.Ingredient;
+import android.app.ActionBar.LayoutParams;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
@@ -20,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CursorTreeAdapter;
 import android.widget.ExpandableListView;
+import android.widget.ImageView;
 import android.widget.SimpleCursorTreeAdapter;
 import android.widget.TextView;
 
@@ -30,6 +34,7 @@ public class RecipeFragment extends Fragment implements
 
 	public static final String ARG_RECIPE_ID = "recipe_id";
 	public static final String ARG_RECIPE_NAME = "recipe_name";
+	public static final String ARG_RECIPE_PHOTO_NAME = "recipe_photo_name";
 	
     /**
      * Cursor adapter for controlling ListView results.
@@ -38,6 +43,8 @@ public class RecipeFragment extends Fragment implements
     
     private String mRecipeName;
     private int mRecipeID;
+    private String mRecipePhotoName;
+    private ImageView img;
 
     /**
      * Projection for querying the content provider.
@@ -60,16 +67,18 @@ public class RecipeFragment extends Fragment implements
 
     private static final int LOADER_INGREDIENTS = 0;
     private static final int LOADER_DIRECTIONS = 1;
+    private static final int LOADER_PHOTO = 2;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public RecipeFragment() {}
     
-    public static RecipeFragment newInstance(int recipeId, String recipeName) {
+    public static RecipeFragment newInstance(int recipeId, String recipeName, String photoName) {
     	Bundle args = new Bundle();
     	args.putInt(ARG_RECIPE_ID, recipeId);
     	args.putString(ARG_RECIPE_NAME, recipeName);
+    	args.putString(ARG_RECIPE_PHOTO_NAME, photoName);
     	RecipeFragment frag = new RecipeFragment();
     	frag.setArguments(args);
     	return frag;
@@ -81,19 +90,45 @@ public class RecipeFragment extends Fragment implements
         Bundle args = getArguments();
         mRecipeName = args.getString(ARG_RECIPE_NAME);
         mRecipeID = args.getInt(ARG_RECIPE_ID);
+        mRecipePhotoName = args.getString(ARG_RECIPE_PHOTO_NAME);
     }
     
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
        
-        ExpandableListView list = new ExpandableListView(getActivity());
+    	View view = inflater.inflate(R.layout.fragment_recipe, container, false);
+    	img = (ImageView) view.findViewById(R.id.recipe_img);
+        ExpandableListView list = (ExpandableListView) view.findViewById(R.id.recipe_list);
         mAdapter = new RecipeAdapter();
         list.setAdapter(mAdapter);
         getLoaderManager().initLoader(LOADER_INGREDIENTS, null, this);
         getLoaderManager().initLoader(LOADER_DIRECTIONS, null, this);
-        return list;
+        getLoaderManager().initLoader(LOADER_PHOTO, null, photoLoader);
+        return view;
     }
 
+    private LoaderCallbacks<Bitmap> photoLoader = new LoaderCallbacks<Bitmap>() {
+
+		@Override
+		public Loader<Bitmap> onCreateLoader(int arg0, Bundle arg1) {
+			Log.i("CALLED", "" + arg0);
+			return new BitmapLoader(getActivity(), Uri.parse(mRecipePhotoName), 100, 100);
+		}
+
+		@Override
+		public void onLoadFinished(Loader<Bitmap> loader, Bitmap bitmap) {
+			Log.i("load_finished", "" + bitmap);
+			if(bitmap != null) {
+				img.setImageBitmap(bitmap);
+			}
+		}
+
+		@Override
+		public void onLoaderReset(Loader<Bitmap> loader) {
+			
+		}
+    	
+    };
     /**
      * Query the content provider for data.
      *
@@ -267,13 +302,10 @@ public class RecipeFragment extends Fragment implements
 		@Override
 		public View getGroupView(int groupPosition, boolean isExpanded,
 				View convertView, ViewGroup parent) {
-			TextView tv;
-			if(convertView != null) {
-				tv = (TextView) convertView;
+			if(convertView == null) {
+				convertView = LayoutInflater.from(getActivity()).inflate(android.R.layout.simple_expandable_list_item_1, parent, false);
 			}
-			else {
-				tv = new TextView(getActivity());
-			}
+			TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
 			switch(groupPosition) {
 			case INGREDIENTS_POS:
 				tv.setText("Ingredients");
@@ -289,13 +321,10 @@ public class RecipeFragment extends Fragment implements
 		@Override
 		public View getChildView(int groupPosition, int childPosition,
 				boolean isLastChild, View convertView, ViewGroup parent) {
-			TextView tv;
-			if(convertView != null) {
-				tv = (TextView) convertView;
+			if(convertView == null) {
+				convertView = LayoutInflater.from(getActivity()).inflate(android.R.layout.simple_expandable_list_item_1, parent, false);
 			}
-			else {
-				tv = new TextView(getActivity());
-			}
+			TextView tv = (TextView) convertView.findViewById(android.R.id.text1);
 			switch(groupPosition) {
 			case INGREDIENTS_POS:
 				ingredients.moveToPosition(childPosition);
