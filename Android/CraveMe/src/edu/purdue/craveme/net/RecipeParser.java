@@ -45,6 +45,7 @@ public class RecipeParser {
 	private static final String FIELD_TIME = "time";
 	private static final String FIELD_PHOTO_URL = "photo_url";
 	private static final String FIELD_USER_ID = "user_id";
+	private static final String FIELD_DIRECTIONS = "steps";
 
 	private static final String FIELD_RESPONSE = "response";
 	private static final String VALUE_SUCCESS = "success";
@@ -73,15 +74,19 @@ public class RecipeParser {
             		int userId = recipeJson.getInt(FIELD_USER_ID);
             		String title = recipeJson.getString(FIELD_TITLE);
             		String steps = recipeJson.getString(FIELD_STEPS);
-            		String ingredientsJsonString = recipeJson.getString(FIELD_INGREDIENTS);
-            		JSONArray ingredientsJson = new JSONArray(ingredientsJsonString.replaceAll("<(.*?)>", "").replaceAll("'", "\"").replaceAll("[A-Za-z0-9]\"[A-Za-z0-9 ]", ""));
+            		JSONArray ingredientsJson = recipeJson.getJSONArray(FIELD_INGREDIENTS);
             		String[] ingredients = new String[ingredientsJson.length()];
             		for(int j = 0; j < ingredients.length; ++j) {
             			ingredients[j] = ingredientsJson.getString(j);
             		}
+            		JSONArray directionsJson = recipeJson.getJSONArray(FIELD_DIRECTIONS);
+            		String[] directions = new String[directionsJson.length()];
+            		for(int j = 0; j < directions.length; ++j) {
+            			directions[j] = directionsJson.getString(j);
+            		}
             		int time = recipeJson.getInt(FIELD_TIME);
             		String photoUrl = recipeJson.getString(FIELD_PHOTO_URL);
-            		Recipe recipe = new Recipe(id, userId, title, steps, ingredients, time, photoUrl);
+            		Recipe recipe = new Recipe(id, userId, title, steps, ingredients, directions, time, photoUrl);
             		recipes.add(recipe);
             	}
             	return recipes;
@@ -111,15 +116,17 @@ public class RecipeParser {
         public final String title;
         public final String steps;
         public final String[] ingredients;
+        public final String[] directions;
         public final int time;
         public final String photoUrl;
         
-        Recipe(int id, int userId, String title, String steps, String[] ingredients, int time, String photoUrl) {
+        Recipe(int id, int userId, String title, String steps, String[] ingredients, String[] directions, int time, String photoUrl) {
         	this.id = id;
         	this.userId = userId;
         	this.title = title;
         	this.steps = steps;
         	this.ingredients = ingredients;
+        	this.directions = directions;
         	this.time = time;
         	this.photoUrl = photoUrl;
         }

@@ -33,6 +33,8 @@ import android.os.RemoteException;
 import android.util.Log;
 import edu.purdue.craveme.net.RecipeParser;
 import edu.purdue.craveme.provider.CraveContract;
+import edu.purdue.craveme.provider.CraveContract.Direction;
+import edu.purdue.craveme.provider.CraveContract.Ingredient;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,11 +104,7 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
             CraveContract.Recipe.COLUMN_NAME_PIC_URL
     };
     
-    private static final String[] INGREDIENTS_PROJECTION = new String[] {
-    		CraveContract.Ingredient._ID,
-    		CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID,
-    		CraveContract.Ingredient.COLUMN_NAME_NAME
-    };
+    
     
     // Constants representing column positions from PROJECTION.
     public static final int COLUMN_ID = 0;
@@ -249,69 +247,16 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Find stale data
         int id;
         int recipeId;
-        String title;
-        int length;
-        String photoUrl;
         while (c.moveToNext()) {
             syncResult.stats.numEntries++;
             id = c.getInt(COLUMN_ID);
             recipeId = c.getInt(COLUMN_RECIPE_ID);
-            title = c.getString(COLUMN_TITLE);
-            length = c.getInt(COLUMN_LENGTH);
-            photoUrl = c.getString(COLUMN_PIC_URL);
             RecipeParser.Recipe match = entryMap.get(recipeId);
             if (match != null) {
                 // Entry exists. Remove from entry map to prevent insert later.
             	RecipeParser.Recipe entry = entryMap.get(recipeId);
-                entryMap.remove(recipeId);
-                // Check to see if the entry needs to be updated
-                Uri existingUri = CraveContract.Recipe.CONTENT_URI.buildUpon()
-                        .appendPath(Integer.toString(id)).build();
-                if ((match.title != null && !match.title.equals(title)) ||
-                        (match.time != 0 && match.time != length) ||
-                        (match.photoUrl != null && !match.photoUrl.equals(photoUrl))) {
-                    // Update existing record
-                    Log.i(TAG, "Scheduling update: " + existingUri);
-                    batch.add(ContentProviderOperation.newUpdate(existingUri)
-                            .withValue(CraveContract.Recipe.COLUMN_NAME_TITLE, title)
-                            .withValue(CraveContract.Recipe.COLUMN_NAME_LENGTH, length)
-                            .withValue(CraveContract.Recipe.COLUMN_NAME_PIC_URL, photoUrl)
-                            .build());
-                    syncResult.stats.numUpdates++;
-                } else {
-                    Log.i(TAG, "No action: " + existingUri);
-                }
-                //Check ingredients
-                Uri ingredientsUri = CraveContract.Recipe.getIngredientsURI(recipeId);
-                Cursor cIngredients = contentResolver.query(ingredientsUri, INGREDIENTS_PROJECTION, null, null, null);
-            	HashSet<String> ingredientsSet = new HashSet<String>();
-            	for(String ingredient : entry.ingredients) {
-            		ingredientsSet.add(ingredient);
-            	}
-            	String curIngredient;
-                while (cIngredients.moveToNext()) {
-                	curIngredient = cIngredients.getString(INGREDIENT_COLUMN_NAME);
-                	boolean contained = ingredientsSet.contains(curIngredient);
-                	//delete ingredients not in the current
-                	if(!contained) {
-                		Log.i(TAG, "Scheduling delete: name=" + curIngredient);
-                		batch.add(ContentProviderOperation.newDelete(ingredientsUri)
-                				.withSelection("name=?", new String[]{Integer.toString(recipeId)})
-                				.build());
-                	}
-                	else {
-                		ingredientsSet.remove(curIngredient);
-                	}
-                	
-                }
-                for(String ingredient : ingredientsSet) {
-                	Log.i(TAG, "Scheduling insert: name=" + ingredient);
-                	batch.add(ContentProviderOperation.newInsert(ingredientsUri)
-                			.withValue(CraveContract.Ingredient.COLUMN_NAME_NAME, ingredient)
-                			.withValue(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID, recipeId)
-                			.build());
-                }
-                cIngredients.close();
+                entryMap.remove(recipeId);                
+                
             } else {
                 // Entry doesn't exist. Remove it from the database.
                 Uri deleteUri = CraveContract.Recipe.CONTENT_URI.buildUpon()
@@ -334,6 +279,23 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
                     .withValue(CraveContract.Recipe.COLUMN_NAME_LENGTH, e.time)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_PIC_URL, e.photoUrl)
                     .build());
+            String recipeIdStr = Integer.toString(e.id);
+            for(String ingredient : e.ingredients) {
+            	Log.i(TAG, "Scheduling insert: name=" + ingredient);
+            	batch.add(ContentProviderOperation.newInsert(Ingredient.CONTENT_URI)
+            			.withValue(CraveContract.Ingredient.COLUMN_NAME_NAME, ingredient)
+            			.withValue(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID, e.id)
+            			.build());
+            }
+            for(int i = 0; i < e.directions.length; ++i) {
+            	String direction = e.directions[i];
+            	Log.i(TAG, "Scheduling insert: name=" + direction);
+            	batch.add(ContentProviderOperation.newInsert(Direction.CONTENT_URI)
+            			.withValue(CraveContract.Direction.COLUMN_NAME_DIRECTION, direction)
+            			.withValue(CraveContract.Direction.COLUMN_NAME_RECIPE_ID, e.id)
+            			.withValue(CraveContract.Direction.COLUMN_NAME_NUMBER, i + 1)
+            			.build());
+            }
             syncResult.stats.numInserts++;
         }
         Log.i(TAG, "Merge solution ready. Applying batch update");

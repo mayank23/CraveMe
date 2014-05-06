@@ -26,6 +26,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.util.Log;
 import edu.purdue.craveme.common.db.SelectionBuilder;
+import edu.purdue.craveme.provider.CraveContract.Direction;
+import edu.purdue.craveme.provider.CraveContract.Recipe;
 
 public class CraveProvider extends ContentProvider {
     CraveDatabase mDatabaseHelper;
@@ -61,11 +63,8 @@ public class CraveProvider extends ContentProvider {
      */
     public static final int ROUTE_INGREDIENTS_ID = 4;
     
-    /**
-     * URI ID for route: /recipes/{ID}/ingredients
-     */
-    public static final int ROUTE_RECIPE_INGREDIENTS = 5;
-    
+    public static final int ROUTE_DIRECTIONS = 5;
+    public static final int ROUTE_DIRECTIONS_ID = 6;
     
     /**
      * UriMatcher, used to decode incoming URIs.
@@ -74,9 +73,10 @@ public class CraveProvider extends ContentProvider {
     static {
         sUriMatcher.addURI(AUTHORITY, "recipes", ROUTE_RECIPES);
         sUriMatcher.addURI(AUTHORITY, "recipes/#", ROUTE_RECIPES_ID);
-        sUriMatcher.addURI(AUTHORITY, "recipes/#/ingredients", ROUTE_RECIPE_INGREDIENTS);
         sUriMatcher.addURI(AUTHORITY, "ingredients", ROUTE_INGREDIENTS);
         sUriMatcher.addURI(AUTHORITY, "ingredients/#", ROUTE_INGREDIENTS_ID);
+        sUriMatcher.addURI(AUTHORITY, "directions", ROUTE_DIRECTIONS);
+        sUriMatcher.addURI(AUTHORITY, "directions/#", ROUTE_DIRECTIONS_ID);
     }
 
     @Override
@@ -96,8 +96,6 @@ public class CraveProvider extends ContentProvider {
                 return CraveContract.Recipe.CONTENT_TYPE;
             case ROUTE_RECIPES_ID:
                 return CraveContract.Recipe.CONTENT_ITEM_TYPE;
-            case ROUTE_RECIPE_INGREDIENTS:
-            	return CraveContract.Ingredient.CONTENT_TYPE;
             case ROUTE_INGREDIENTS:
             	return CraveContract.Ingredient.CONTENT_TYPE;
             case ROUTE_INGREDIENTS_ID:
@@ -135,19 +133,6 @@ public class CraveProvider extends ContentProvider {
                 assert ctx != null;
                 c.setNotificationUri(ctx.getContentResolver(), uri);
                 return c;
-            case ROUTE_RECIPE_INGREDIENTS:
-            	//Return all ingredients for a specific recipe
-            	id = uri.getPathSegments().get(1);
-            	builder.table(CraveContract.Ingredient.TABLE_NAME)
-            		   .where(selection, selectionArgs)
-            		   .where(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID + "=?", id);
-            	c = builder.query(db, projection, sortOrder);
-            	 // Note: Notification URI must be manually set here for loaders to correctly
-                // register ContentObservers.
-                ctx = getContext();
-                assert ctx != null;
-                c.setNotificationUri(ctx.getContentResolver(), uri);
-                return c;
             case ROUTE_INGREDIENTS_ID:
                 // Return a single entry, by ID.
                 id = uri.getLastPathSegment();
@@ -162,7 +147,21 @@ public class CraveProvider extends ContentProvider {
                 ctx = getContext();
                 assert ctx != null;
                 c.setNotificationUri(ctx.getContentResolver(), uri);
-                return c;            	
+                return c;            
+            case ROUTE_DIRECTIONS_ID:
+            	id = uri.getLastPathSegment();
+                builder.where(CraveContract.Direction._ID + "=?", id);
+            case ROUTE_DIRECTIONS:
+            	// Return all known entries.
+                builder.table(CraveContract.Direction.TABLE_NAME)
+                       .where(selection, selectionArgs);
+                c = builder.query(db, projection, sortOrder);
+                // Note: Notification URI must be manually set here for loaders to correctly
+                // register ContentObservers.
+                ctx = getContext();
+                assert ctx != null;
+                c.setNotificationUri(ctx.getContentResolver(), uri);
+                return c;            
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -184,17 +183,17 @@ public class CraveProvider extends ContentProvider {
                 break;
             case ROUTE_RECIPES_ID:
                 throw new UnsupportedOperationException("Insert not supported on URI: " + uri);
-            case ROUTE_RECIPE_INGREDIENTS:
-            	String recipeId = uri.getPathSegments().get(1);
-            	values.put(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID, recipeId);
-            	id = db.insertOrThrow(CraveContract.Ingredient.TABLE_NAME, null, values);
-            	result = Uri.parse(CraveContract.Ingredient.CONTENT_URI + "/" + id);
-            	break;
             case ROUTE_INGREDIENTS:
             	id = db.insertOrThrow(CraveContract.Ingredient.TABLE_NAME, null, values);
             	result = Uri.parse(CraveContract.Ingredient.CONTENT_URI + "/" + id);
             	break;
             case ROUTE_INGREDIENTS_ID:
+            	throw new UnsupportedOperationException("Insert not supported on URI: " + uri);
+            case ROUTE_DIRECTIONS:
+            	id = db.insertOrThrow(CraveContract.Direction.TABLE_NAME, null, values);
+            	result = Uri.parse(CraveContract.Direction.CONTENT_URI + "/" + id);
+            	break;
+            case ROUTE_DIRECTIONS_ID:
             	throw new UnsupportedOperationException("Insert not supported on URI: " + uri);
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -228,21 +227,27 @@ public class CraveProvider extends ContentProvider {
                        .where(selection, selectionArgs)
                        .delete(db);
                 break;
-            case ROUTE_RECIPE_INGREDIENTS:
-            	id = uri.getPathSegments().get(1);
-            	count = builder.table(CraveContract.Ingredient.TABLE_NAME)
-            			.where(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID + "=?", id)
-            			.where(selection, selectionArgs)
-            			.delete(db);
-            	break;
             case ROUTE_INGREDIENTS:
             	count = builder.table(CraveContract.Ingredient.TABLE_NAME)
                 .where(selection, selectionArgs)
                 .delete(db);
+            	break;
             case ROUTE_INGREDIENTS_ID:
             	id = uri.getLastPathSegment();
                 count = builder.table(CraveContract.Ingredient.TABLE_NAME)
                        .where(CraveContract.Ingredient._ID + "=?", id)
+                       .where(selection, selectionArgs)
+                       .delete(db);
+                break;
+            case ROUTE_DIRECTIONS:
+            	count = builder.table(CraveContract.Direction.TABLE_NAME)
+                .where(selection, selectionArgs)
+                .delete(db);
+            	break;
+            case ROUTE_DIRECTIONS_ID:
+            	id = uri.getLastPathSegment();
+                count = builder.table(CraveContract.Direction.TABLE_NAME)
+                       .where(CraveContract.Direction._ID + "=?", id)
                        .where(selection, selectionArgs)
                        .delete(db);
                 break;
@@ -278,13 +283,6 @@ public class CraveProvider extends ContentProvider {
                         .where(selection, selectionArgs)
                         .update(db, values);
                 break;
-            case ROUTE_RECIPE_INGREDIENTS:
-            	id = uri.getPathSegments().get(1);
-            	count = builder.table(CraveContract.Ingredient.TABLE_NAME)
-            			.where(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID + "=?", id)
-            			.where(selection, selectionArgs)
-            			.update(db, values);
-            	break;
             case ROUTE_INGREDIENTS:
             	count = builder.table(CraveContract.Ingredient.TABLE_NAME)
                 .where(selection, selectionArgs)
@@ -343,6 +341,14 @@ public class CraveProvider extends ContentProvider {
         				"PRIMARY KEY(" + CraveContract.Ingredient._ID + ")" + COMMA_SEP +
         				"FOREIGN KEY(" + CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID + ") REFERENCES " + CraveContract.Recipe.TABLE_NAME + "(" + CraveContract.Recipe.COLUMN_NAME_RECIPE_ID + "))"; 
 
+        private static final String SQL_CREATE_DIRECTIONS =
+        		"CREATE TABLE " + Direction.TABLE_NAME + " (" +
+        				Direction._ID + TYPE_INTEGER + COMMA_SEP +
+        				Direction.COLUMN_NAME_DIRECTION + TYPE_TEXT + COMMA_SEP +
+        				Direction.COLUMN_NAME_NUMBER + TYPE_INTEGER + COMMA_SEP +
+        				Direction.COLUMN_NAME_RECIPE_ID + TYPE_INTEGER + COMMA_SEP +
+        				"PRIMARY KEY(" + Direction._ID + ")" + COMMA_SEP +
+        				"FOREIGN KEY(" + Direction.COLUMN_NAME_RECIPE_ID + ") REFERENCES " + Recipe.TABLE_NAME + " (" + Recipe.COLUMN_NAME_RECIPE_ID + "))";
         /** SQL statement to drop "entry" table. */
         private static final String SQL_DELETE_RECIPES =
                 "DROP TABLE IF EXISTS " + CraveContract.Recipe.TABLE_NAME;
@@ -350,6 +356,9 @@ public class CraveProvider extends ContentProvider {
         /** SQL statement to drop "ingredient" table. */
         private static final String SQL_DELETE_INGREDIENTS =
         		"DROP TABLE IF EXISTS " + CraveContract.Ingredient.TABLE_NAME;
+        
+        private static final String SQL_DELETE_DIRECTIONS =
+        		"DROP TABLE IF EXISTS " + Direction.TABLE_NAME;
 
         public CraveDatabase(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -359,14 +368,16 @@ public class CraveProvider extends ContentProvider {
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(SQL_CREATE_RECIPES);
             db.execSQL(SQL_CREATE_INGREDIENTS);
+            db.execSQL(SQL_CREATE_DIRECTIONS);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             // This database is only a cache for online data, so its upgrade policy is
             // to simply to discard the data and start over
-            db.execSQL(SQL_DELETE_RECIPES);
             db.execSQL(SQL_DELETE_INGREDIENTS);
+            db.execSQL(SQL_DELETE_DIRECTIONS);
+            db.execSQL(SQL_DELETE_RECIPES);
             onCreate(db);
         }
     }

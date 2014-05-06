@@ -1,17 +1,29 @@
 package edu.purdue.craveme;
 
 import edu.purdue.craveme.provider.CraveContract;
+import edu.purdue.craveme.provider.CraveContract.Direction;
+import edu.purdue.craveme.provider.CraveContract.Ingredient;
+import android.content.Context;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.CursorTreeAdapter;
+import android.widget.ExpandableListView;
+import android.widget.SimpleCursorTreeAdapter;
+import android.widget.TextView;
 
-public class RecipeFragment extends ListFragment implements
+public class RecipeFragment extends Fragment implements
 		LoaderCallbacks<Cursor> {
 	
 	private static final String TAG = "RecipeFragment";
@@ -22,7 +34,7 @@ public class RecipeFragment extends ListFragment implements
     /**
      * Cursor adapter for controlling ListView results.
      */
-    private SimpleCursorAdapter mAdapter;
+    private RecipeAdapter mAdapter;
     
     private String mRecipeName;
     private int mRecipeID;
@@ -30,32 +42,24 @@ public class RecipeFragment extends ListFragment implements
     /**
      * Projection for querying the content provider.
      */
-    private static final String[] PROJECTION = new String[]{
-            CraveContract.Ingredient._ID,
-            CraveContract.Ingredient.COLUMN_NAME_NAME
+    private static final String[] DIRECTIONS_PROJECTION = new String[]{
+            CraveContract.Direction._ID,
+            CraveContract.Direction.COLUMN_NAME_DIRECTION
     };
-
-    // Column indexes. The index of a column in the Cursor is the same as its relative position in
-    // the projection.
-    /** Column index for _ID */
-    private static final int COLUMN_ID = 0;
-    /** Column index for name */
-    private static final int COLUMN_NAME = 1;
-
-    /**
-     * List of Cursor columns to read from when preparing an adapter to populate the ListView.
-     */
-    private static final String[] FROM_COLUMNS = new String[]{
-            CraveContract.Ingredient.COLUMN_NAME_NAME
+    
+    private static final int DIRECTIONS_COL_ID = 0;
+    private static final int DIRECTIONS_COL_DIRECTION = 1;
+    
+    private static final String[] INGREDIENTS_PROJECTION = new String[]{
+    		Ingredient._ID,
+    		Ingredient.COLUMN_NAME_NAME
     };
+    
+    private static final int INGREDIENTS_COL_ID = 0;
+    private static final int INGREDIENTS_COL_NAME = 1;
 
-    /**
-     * List of Views which will be populated by Cursor data.
-     */
-    private static final int[] TO_FIELDS = new int[]{
-            android.R.id.text1,
-    };
-
+    private static final int LOADER_INGREDIENTS = 0;
+    private static final int LOADER_DIRECTIONS = 1;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -80,27 +84,14 @@ public class RecipeFragment extends ListFragment implements
     }
     
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        mAdapter = new SimpleCursorAdapter(
-                getActivity(),       // Current context
-                android.R.layout.simple_list_item_activated_2,  // Layout for individual rows
-                null,                // Cursor
-                FROM_COLUMNS,        // Cursor columns to use
-                TO_FIELDS,           // Layout fields to use
-                0                    // No flags
-        );
-        mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
-            @Override
-            public boolean setViewValue(View view, Cursor cursor, int i) {
-                    // Let SimpleCursorAdapter handle other fields automatically
-                    return false;
-            }
-        });
-        setListAdapter(mAdapter);
-        setEmptyText(getText(R.string.loading));
-        getLoaderManager().initLoader(0, null, this);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+       
+        ExpandableListView list = new ExpandableListView(getActivity());
+        mAdapter = new RecipeAdapter();
+        list.setAdapter(mAdapter);
+        getLoaderManager().initLoader(LOADER_INGREDIENTS, null, this);
+        getLoaderManager().initLoader(LOADER_DIRECTIONS, null, this);
+        return list;
     }
 
     /**
@@ -115,12 +106,25 @@ public class RecipeFragment extends ListFragment implements
 	public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
 		// We only have one loader, so we can ignore the value of i.
         // (It'll be '0', as set in onCreate().)
-        return new CursorLoader(getActivity(),  // Context
-                CraveContract.Recipe.getIngredientsURI(mRecipeID), // URI
-                PROJECTION,                // Projection
-                null,                           // Selection
-                null,                           // Selection args
-                CraveContract.Ingredient.COLUMN_NAME_NAME + " asc"); // Sort
+		switch(i) {
+		case LOADER_DIRECTIONS:
+			 return new CursorLoader(getActivity(),  // Context
+		                CraveContract.Direction.CONTENT_URI, // URI
+		                DIRECTIONS_PROJECTION,                // Projection
+		                Direction.COLUMN_NAME_RECIPE_ID + "=?",                           // Selection
+		                new String[]{Integer.toString(mRecipeID)},                           // Selection args
+		                CraveContract.Direction.COLUMN_NAME_NUMBER + " asc"); // Sort
+		case LOADER_INGREDIENTS:
+				return new CursorLoader(getActivity(),
+						Ingredient.CONTENT_URI,
+						INGREDIENTS_PROJECTION,
+						Ingredient.COLUMN_NAME_RECIPE_ID + "=?",
+						new String[]{Integer.toString(mRecipeID)},
+						Ingredient.COLUMN_NAME_NAME + " asc");
+		default:
+			throw new RuntimeException("out of bounds");
+		}
+       
 	}
 
 	/**
@@ -130,7 +134,16 @@ public class RecipeFragment extends ListFragment implements
 	@Override
 	public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
 		Log.i(TAG, cursor.getCount() + " ROWS");
-        mAdapter.changeCursor(cursor);
+		switch(cursorLoader.getId()) {
+		case LOADER_INGREDIENTS:
+			mAdapter.updateIngredients(cursor);
+			break;
+		case LOADER_DIRECTIONS:
+			mAdapter.updateDirections(cursor);
+			break;
+		default:
+			throw new RuntimeException("out of bounds");
+		}
 	}
 
 	 /**
@@ -141,7 +154,178 @@ public class RecipeFragment extends ListFragment implements
      */
 	@Override
 	public void onLoaderReset(Loader<Cursor> cursorLoader) {
-		mAdapter.changeCursor(null);
+		switch(cursorLoader.getId()) {
+		case LOADER_INGREDIENTS:
+			mAdapter.updateIngredients(null);
+			break;
+		case LOADER_DIRECTIONS:
+			mAdapter.updateDirections(null);
+			break;
+		default:
+			throw new RuntimeException("out of bounds");
+		}
+	}
+	
+	
+	private class RecipeAdapter extends BaseExpandableListAdapter {
+
+		private Cursor ingredients;
+		private Cursor directions;
+		private static final int INGREDIENTS_POS = 0;
+		private static final int DIRECTIONS_POS = 1;
+		@Override
+		public int getGroupCount() {
+			return 2;
+		}
+		@Override
+		public int getChildrenCount(int groupPosition) {
+			switch(groupPosition) {
+			case INGREDIENTS_POS:
+				if(ingredients != null) {
+					return ingredients.getCount();
+				}
+				else {
+					return 0;
+				}
+			case DIRECTIONS_POS:
+				if(directions != null) {
+					return directions.getCount();
+				}
+				else {
+					return 0;
+				}
+			default:
+				throw new RuntimeException("out of bounds");
+			}
+			
+		}
+		@Override
+		public Object getGroup(int groupPosition) {
+			switch(groupPosition) {
+			case INGREDIENTS_POS:
+				return ingredients;
+			case DIRECTIONS_POS:
+				return directions;
+			default:
+				throw new RuntimeException("out of bounds");
+			}
+		}
+		@Override
+		public Object getChild(int groupPosition, int childPosition) {
+			switch(groupPosition) {
+			case INGREDIENTS_POS:
+				if(ingredients != null) {
+					ingredients.moveToPosition(childPosition);
+					return ingredients;
+				}
+				else {
+					return null;
+				}
+			case DIRECTIONS_POS:
+				if(directions != null) {
+					directions.moveToPosition(childPosition);
+					return directions;
+				}
+				else {
+					return null;
+				}
+			default:
+				throw new RuntimeException("out of bounds");
+			}
+		}
+		@Override
+		public long getGroupId(int groupPosition) {
+			return groupPosition;
+		}
+		@Override
+		public long getChildId(int groupPosition, int childPosition) {
+			switch(groupPosition) {
+			case INGREDIENTS_POS:
+				if(ingredients != null) {
+					ingredients.moveToPosition(childPosition);
+					return ingredients.getInt(INGREDIENTS_COL_ID);
+				}
+				else {
+					return -1;
+				}
+			case DIRECTIONS_POS:
+				if(directions != null) {
+					directions.moveToPosition(childPosition);
+					return directions.getInt(DIRECTIONS_COL_ID);
+				}
+				else {
+					return -1;
+				}
+			default:
+				throw new RuntimeException("out of bounds");
+			}
+		}
+		@Override
+		public boolean hasStableIds() {
+			return true;
+		}
+		@Override
+		public View getGroupView(int groupPosition, boolean isExpanded,
+				View convertView, ViewGroup parent) {
+			TextView tv;
+			if(convertView != null) {
+				tv = (TextView) convertView;
+			}
+			else {
+				tv = new TextView(getActivity());
+			}
+			switch(groupPosition) {
+			case INGREDIENTS_POS:
+				tv.setText("Ingredients");
+				break;
+			case DIRECTIONS_POS:
+				tv.setText("Directions");
+				break;
+			default:
+				throw new RuntimeException("out of bounds");
+			}
+			return tv;
+		}
+		@Override
+		public View getChildView(int groupPosition, int childPosition,
+				boolean isLastChild, View convertView, ViewGroup parent) {
+			TextView tv;
+			if(convertView != null) {
+				tv = (TextView) convertView;
+			}
+			else {
+				tv = new TextView(getActivity());
+			}
+			switch(groupPosition) {
+			case INGREDIENTS_POS:
+				ingredients.moveToPosition(childPosition);
+				tv.setText(ingredients.getString(INGREDIENTS_COL_NAME));
+				break;
+			case DIRECTIONS_POS:
+				directions.moveToPosition(childPosition);
+				tv.setText(directions.getString(DIRECTIONS_COL_DIRECTION));
+				break;
+			default:
+				throw new RuntimeException("out of bounds");
+			}
+			return tv;
+		}
+		@Override
+		public boolean isChildSelectable(int groupPosition, int childPosition) {
+			return false;
+		}
+		
+		public void updateIngredients(Cursor ingredients) {
+			this.ingredients = ingredients;
+			notifyDataSetChanged();
+		}
+		
+		public void updateDirections(Cursor directions) {
+			this.directions = directions;
+			notifyDataSetChanged();
+		}
+		
+		
 	}
 
 }

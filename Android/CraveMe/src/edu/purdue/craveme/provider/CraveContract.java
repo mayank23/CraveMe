@@ -47,6 +47,8 @@ public class CraveContract {
      * Path component for "ingredient"-type resources..
      */
     private static final String PATH_INGREDIENTS = "ingredients";
+    
+    private static final String PATH_DIRECTIONS = "directions";
 
     /**
      * Columns supported by "entries" records.
@@ -68,14 +70,6 @@ public class CraveContract {
          */
         public static final Uri CONTENT_URI =
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_RECIPES).build();
-        
-        /**
-         * Build a URI for "recipe/#/ingredients" resources
-         */
-        
-        public static final Uri getIngredientsURI(int recipeId) {
-        	return CONTENT_URI.buildUpon().appendEncodedPath(Integer.toString(recipeId) + "/ingredients").build();
-        }
 
         /**
          * Table name where records are stored for "recipe" resources.
@@ -146,5 +140,40 @@ public class CraveContract {
          */
         public static final String COLUMN_NAME_RECIPE_ID = "recipe_id";
         
+    }
+    
+    public static class Direction implements BaseColumns {
+    	/**
+         * MIME type for lists of entries.
+         */
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/vnd.craveme.directions";
+        /**
+         * MIME type for individual entries.
+         */
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/vnd.craveme.direction";
+
+        /**
+         * Fully qualified URI for "ingredient" resources.
+         */
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_DIRECTIONS).build();
+        
+        /**
+         * Table name where records are stored for "recipe" resources.
+         */
+        public static final String TABLE_NAME = "directions";
+        
+        /**
+         * Name of direction
+         */
+        public static final String COLUMN_NAME_DIRECTION = "direction";
+        
+        public static final String COLUMN_NAME_NUMBER = "number";
+        /**
+         * ID of recipe
+         */
+        public static final String COLUMN_NAME_RECIPE_ID = "recipe_id";
     }
 }
