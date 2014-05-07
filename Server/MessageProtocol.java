@@ -83,6 +83,18 @@ public JSONObject parseMessage() throws Exception
 								JSONObject output = Work.uploadRecipe(json);
 								return output;
 							}
+							else
+								if(option.equals("get_comments_meal"))
+								{
+									JSONObject output = Work.getComments(json);
+									return output;
+								}
+								else
+									if(option.equals("add_comment_meal"))
+									{
+										JSONObject output = Work.addComment(json);
+										return output;
+									}
 		
 			// else
 			return null;
@@ -586,5 +598,87 @@ public static JSONObject getAllMeals(JSONObject request)
 	
 	
 }
+
+// add comment
+public static JSONObject addComment(JSONObject request)
+{
+	
+	int error = ConnectToDB();
+	JSONObject response = new JSONObject();
+	
+	if(error == -1)
+	{
+		return null;
+	}
+	else{
+		
+		try{
+	
+			PreparedStatement stmt = conn.prepareStatement("INSERT INTO comments_meals (meal_id,text,user_name) VALUES (?,?,?)");
+			stmt.setInt(1, request.getInt("meal_id"));
+			stmt.setString(2,request.getString("text") );
+			stmt.setString(3, request.getString("user_name"));
+			stmt.executeUpdate();
+			
+			response.put("response", "success");
+			
+			System.out.println("added text:"+request.getString("text"));
+		}
+		catch(Exception e)
+		{
+			try {
+				response.put("response", e.toString());
+			} catch (JSONException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return null;
+			}
+			return response;
+		}
+		
+		
+		
+	}
+	return null;
+}
+public static JSONObject getComments(JSONObject request)
+{
+	
+	ConnectToDB();
+	JSONObject response = new JSONObject();
+	try{
+		
+		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM comments_meals WHERE meal_id = ?");
+		ResultSet result = stmt.executeQuery();
+		JSONArray array = new JSONArray();
+		while(result.next())
+		{
+			JSONObject current = new JSONObject();
+			current.put("text", result.getString("text"));
+			current.put("user_name", result.getString("user_name"));
+			array.put(current);
+		}
+		response.put("comments", array);
+		
+		return response;
+		
+	}
+	catch(Exception e)
+	{
+		try {
+			response.put("response", e.toString());
+			return response;
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			
+			e1.printStackTrace();
+			return null;
+		}
+		
+	}
+
+}
+
+
 
 }
