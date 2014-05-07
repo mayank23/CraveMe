@@ -93,6 +93,7 @@ public class EntryListFragment extends ListFragment
             CraveContract.Recipe._ID,
             CraveContract.Recipe.COLUMN_NAME_TITLE,
             CraveContract.Recipe.COLUMN_NAME_LENGTH,
+            CraveContract.Recipe.COLUMN_NAME_PIC_PATH,
             CraveContract.Recipe.COLUMN_NAME_RECIPE_ID
     };
 
@@ -104,8 +105,9 @@ public class EntryListFragment extends ListFragment
     private static final int COLUMN_TITLE = 1;
     /** Column index for length */
     private static final int COLUMN_LENGTH = 2;
+    private static final int COLUMN_PIC_PATH = 3;
     /** Column index for recipe id */
-    private static final int COLUMN_RECIPE_ID = 3;
+    private static final int COLUMN_RECIPE_ID = 4;
 
     /**
      * List of Cursor columns to read from when preparing an adapter to populate the ListView.
@@ -297,7 +299,8 @@ public class EntryListFragment extends ListFragment
         Cursor c = (Cursor) mAdapter.getItem(position);
         int recipeId = c.getInt(COLUMN_RECIPE_ID);
         String recipeTitle = c.getString(COLUMN_TITLE);
-        getActivity().startActivity(RecipeActivity.getViewIntent(getActivity(), recipeId, recipeTitle));
+        String recipePhotoPath = c.getString(COLUMN_PIC_PATH);
+        getActivity().startActivity(RecipeActivity.getViewIntent(getActivity(), recipeId, recipeTitle, recipePhotoPath));
     }
 
     /**

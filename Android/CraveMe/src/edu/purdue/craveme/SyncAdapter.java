@@ -29,13 +29,19 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.util.Log;
 import edu.purdue.craveme.net.RecipeParser;
 import edu.purdue.craveme.provider.CraveContract;
+import edu.purdue.craveme.provider.CraveContract.Direction;
+import edu.purdue.craveme.provider.CraveContract.Ingredient;
 
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -44,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,11 +109,7 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
             CraveContract.Recipe.COLUMN_NAME_PIC_URL
     };
     
-    private static final String[] INGREDIENTS_PROJECTION = new String[] {
-    		CraveContract.Ingredient._ID,
-    		CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID,
-    		CraveContract.Ingredient.COLUMN_NAME_NAME
-    };
+    
     
     // Constants representing column positions from PROJECTION.
     public static final int COLUMN_ID = 0;
@@ -123,6 +126,10 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
     // Constants representing sync options
     private static final String REQUEST_OPTION = "option";
     private static final String OPTION_RECIPES = "get_all_recipes";
+    private static final String OPTION_PHOTO = "get_photo";
+    private static final String SERVER_FILE_PATH = "server_file_path";
+    
+    private static final byte[] PHOTO_BUF = new byte[4096];
 
     /**
      * Constructor. Obtains handle to content resolver for later use.
@@ -249,69 +256,16 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Find stale data
         int id;
         int recipeId;
-        String title;
-        int length;
-        String photoUrl;
         while (c.moveToNext()) {
             syncResult.stats.numEntries++;
             id = c.getInt(COLUMN_ID);
             recipeId = c.getInt(COLUMN_RECIPE_ID);
-            title = c.getString(COLUMN_TITLE);
-            length = c.getInt(COLUMN_LENGTH);
-            photoUrl = c.getString(COLUMN_PIC_URL);
             RecipeParser.Recipe match = entryMap.get(recipeId);
             if (match != null) {
                 // Entry exists. Remove from entry map to prevent insert later.
             	RecipeParser.Recipe entry = entryMap.get(recipeId);
-                entryMap.remove(recipeId);
-                // Check to see if the entry needs to be updated
-                Uri existingUri = CraveContract.Recipe.CONTENT_URI.buildUpon()
-                        .appendPath(Integer.toString(id)).build();
-                if ((match.title != null && !match.title.equals(title)) ||
-                        (match.time != 0 && match.time != length) ||
-                        (match.photoUrl != null && !match.photoUrl.equals(photoUrl))) {
-                    // Update existing record
-                    Log.i(TAG, "Scheduling update: " + existingUri);
-                    batch.add(ContentProviderOperation.newUpdate(existingUri)
-                            .withValue(CraveContract.Recipe.COLUMN_NAME_TITLE, title)
-                            .withValue(CraveContract.Recipe.COLUMN_NAME_LENGTH, length)
-                            .withValue(CraveContract.Recipe.COLUMN_NAME_PIC_URL, photoUrl)
-                            .build());
-                    syncResult.stats.numUpdates++;
-                } else {
-                    Log.i(TAG, "No action: " + existingUri);
-                }
-                //Check ingredients
-                Uri ingredientsUri = CraveContract.Recipe.getIngredientsURI(recipeId);
-                Cursor cIngredients = contentResolver.query(ingredientsUri, INGREDIENTS_PROJECTION, null, null, null);
-            	HashSet<String> ingredientsSet = new HashSet<String>();
-            	for(String ingredient : entry.ingredients) {
-            		ingredientsSet.add(ingredient);
-            	}
-            	String curIngredient;
-                while (cIngredients.moveToNext()) {
-                	curIngredient = cIngredients.getString(INGREDIENT_COLUMN_NAME);
-                	boolean contained = ingredientsSet.contains(curIngredient);
-                	//delete ingredients not in the current
-                	if(!contained) {
-                		Log.i(TAG, "Scheduling delete: name=" + curIngredient);
-                		batch.add(ContentProviderOperation.newDelete(ingredientsUri)
-                				.withSelection("name=?", new String[]{Integer.toString(recipeId)})
-                				.build());
-                	}
-                	else {
-                		ingredientsSet.remove(curIngredient);
-                	}
-                	
-                }
-                for(String ingredient : ingredientsSet) {
-                	Log.i(TAG, "Scheduling insert: name=" + ingredient);
-                	batch.add(ContentProviderOperation.newInsert(ingredientsUri)
-                			.withValue(CraveContract.Ingredient.COLUMN_NAME_NAME, ingredient)
-                			.withValue(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID, recipeId)
-                			.build());
-                }
-                cIngredients.close();
+                entryMap.remove(recipeId);                
+                
             } else {
                 // Entry doesn't exist. Remove it from the database.
                 Uri deleteUri = CraveContract.Recipe.CONTENT_URI.buildUpon()
@@ -326,14 +280,31 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
         // Add new items
         for (RecipeParser.Recipe e : entryMap.values()) {
             Log.i(TAG, "Scheduling insert: entry_id=" + e.id);
-            //TODO: create local photo
+        	String ext = e.photoUrl.substring(e.photoUrl.lastIndexOf('.'));
             batch.add(ContentProviderOperation.newInsert(CraveContract.Recipe.CONTENT_URI)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_RECIPE_ID, e.id)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_USER_ID, e.userId)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_TITLE, e.title)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_LENGTH, e.time)
                     .withValue(CraveContract.Recipe.COLUMN_NAME_PIC_URL, e.photoUrl)
+                    .withValue(CraveContract.Recipe.COLUMN_NAME_PIC_PATH, CraveContract.BASE_CONTENT_URI.buildUpon().appendEncodedPath("recipe_" + e.id + ext).build().toString())
                     .build());
+            for(String ingredient : e.ingredients) {
+            	Log.i(TAG, "Scheduling insert: name=" + ingredient);
+            	batch.add(ContentProviderOperation.newInsert(Ingredient.CONTENT_URI)
+            			.withValue(CraveContract.Ingredient.COLUMN_NAME_NAME, ingredient)
+            			.withValue(CraveContract.Ingredient.COLUMN_NAME_RECIPE_ID, e.id)
+            			.build());
+            }
+            for(int i = 0; i < e.directions.length; ++i) {
+            	String direction = e.directions[i];
+            	Log.i(TAG, "Scheduling insert: name=" + direction);
+            	batch.add(ContentProviderOperation.newInsert(Direction.CONTENT_URI)
+            			.withValue(CraveContract.Direction.COLUMN_NAME_DIRECTION, direction)
+            			.withValue(CraveContract.Direction.COLUMN_NAME_RECIPE_ID, e.id)
+            			.withValue(CraveContract.Direction.COLUMN_NAME_NUMBER, i + 1)
+            			.build());
+            }
             syncResult.stats.numInserts++;
         }
         Log.i(TAG, "Merge solution ready. Applying batch update");
@@ -344,6 +315,20 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
                 false);                         // IMPORTANT: Do not sync to network
         // This sample doesn't support uploads, but if *your* code does, make sure you set
         // syncToNetwork=false in the line above to prevent duplicate syncs.
+        for(RecipeParser.Recipe e : entryMap.values()) {
+        	try {
+            	String ext = e.photoUrl.substring(e.photoUrl.lastIndexOf('.'));
+            	ParcelFileDescriptor fd = mContentResolver.openFileDescriptor(CraveContract.BASE_CONTENT_URI.buildUpon().appendEncodedPath("recipe_" + e.id + ext).build(), "w");
+            	saveRecipePhoto(e.photoUrl, "recipe_" + e.id + ext, fd);
+            }
+            catch(Exception ex) {
+            	ex.printStackTrace();
+            }
+        }
+        mContentResolver.notifyChange(
+                CraveContract.Photos.CONTENT_URI, // URI where data was modified
+                null,                           // No local observer
+                false);                         // IMPORTANT: Do not sync to network
     }
 
     /**
@@ -372,5 +357,30 @@ class SyncAdapter extends AbstractThreadedSyncAdapter {
     	wr.append('\n');
     	wr.flush();
     	return s.getInputStream();
+    }
+    
+    private InputStream requestPhoto(Socket s, String path) throws IOException, JSONException {
+    	OutputStreamWriter wr = new OutputStreamWriter(s.getOutputStream());
+    	JSONObject request = new JSONObject();
+    	Log.i("TEST", path);
+    	request.put(REQUEST_OPTION, OPTION_PHOTO);
+    	request.put(SERVER_FILE_PATH, path);
+    	wr.write(request.toString());
+    	wr.append('\n');
+    	wr.flush();
+    	return s.getInputStream();
+    }
+    
+    private void saveRecipePhoto(String path, String file, ParcelFileDescriptor fd) throws IOException {
+    	HttpURLConnection conn = (HttpURLConnection) new URL(path).openConnection();
+    	OutputStream wr = new FileOutputStream(fd.getFileDescriptor());
+    	InputStream rd = conn.getInputStream();
+    	int read;
+    	Log.v("writing", path + " to " + file);
+    	while((read = rd.read(PHOTO_BUF)) != -1) {
+    		wr.write(PHOTO_BUF, 0, read);
+    	}
+    	conn.disconnect();
+    	fd.close();
     }
 }
