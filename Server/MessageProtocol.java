@@ -700,7 +700,7 @@ public static JSONObject setCraves(JSONObject request)
 	JSONObject response = new JSONObject();
 	try{
 		
-		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET craves = ? WHERE meal_id = ?");
+		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET craves = ? WHERE id = ?");
 		stmt.setInt(1, request.getInt("craves"));
 		stmt.setInt(2, request.getInt("meal_id"));
 		stmt.executeUpdate();
@@ -728,7 +728,7 @@ public static JSONObject setNots(JSONObject request)
 	JSONObject response = new JSONObject();
 	try{
 		
-		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET nots = ? WHERE meal_id = ?");
+		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET nots = ? WHERE id = ?");
 		stmt.setInt(1, request.getInt("nots"));
 		stmt.setInt(2, request.getInt("meal_id"));
 		stmt.executeUpdate();

@@ -129,6 +129,12 @@ else
 											pw.println("{\"option\":\"set_craves\",\"meal_id\":12,\"craves\":20}");
 											System.out.println(reader.readLine());
 										}
+										else
+											if(args[2].equals("set_nots"))
+											{
+												pw.println("{\"option\":\"set_nots\",\"meal_id\":12,\"nots\":10}");
+												System.out.println(reader.readLine());
+											}
 
 		
 			{
