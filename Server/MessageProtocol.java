@@ -623,6 +623,7 @@ public static JSONObject addComment(JSONObject request)
 			response.put("response", "success");
 			
 			System.out.println("added text:"+request.getString("text"));
+			return response;
 		}
 		catch(Exception e)
 		{
@@ -639,7 +640,7 @@ public static JSONObject addComment(JSONObject request)
 		
 		
 	}
-	return null;
+	
 }
 public static JSONObject getComments(JSONObject request)
 {

@@ -113,7 +113,19 @@ else
 								pw.println("{\"option\":\"upload_recipe\", \"ingredients\" : [\"food1\"],\"steps\":[\"<>html>step1\"],\"user_id\":-1,\"title\":\"title\" ,\"time\":15,\"photo_url\":\"http://url.com\"}");
 								System.out.println(reader.readLine());
 							}
-			else
+							else
+								if(args[2].equals("get_comments_meal"))
+								{
+									pw.println("{\"option\":\"get_comments_meal\",\"meal_id\":12}");
+									System.out.println(reader.readLine());
+								}
+								else
+									if(args[2].equals("add_comment_meal")){
+										pw.println("{\"option\":\"add_comment_meal\",\"meal_id\":12,\"text\":\"hello world\",\"user_name\":\"mayank23\"}");
+										System.out.println(reader.readLine());
+									}else
+
+		
 			{
 				System.out.println("unrecognized option!");
 			}
