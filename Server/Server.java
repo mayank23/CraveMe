@@ -78,7 +78,7 @@ class Pool extends Thread{
 							 // naming file
 							 String file_name = "photos/photos_"+(int)(Math.random()*2234211)+"_"+(int)(Math.random()*22342111)+"_"+(int)(Math.random()*22342)+"_"+json.getString("file_name");
 							 System.out.println("file_name= "+file_name);
-							 
+					
 							 // photo upload, mode.
 							 // start reading from the server
 							 File file = new File(file_name);
@@ -141,7 +141,7 @@ class Pool extends Thread{
 						 else{
 							 out.println(response.toString());
 							 // print to terminal
-							 System.out.println(response.toString());
+			
 						 }
 						 out.flush();
 						 out.close();
