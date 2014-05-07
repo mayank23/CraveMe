@@ -121,7 +121,7 @@ else
 								}
 								else
 									if(args[2].equals("add_comment_meal")){
-										pw.println("{\"option\":\"add_comment_meal\",\"meal_id\":12,\"text\":\"hello world\",\"user_name\":\"mayank23\"}");
+										pw.println("{\"option\":\"add_comment_meal\",\"meal_id\":12,\"text\":\" Very Tasty!\",\"user_name\":\"person1\"}");
 										System.out.println(reader.readLine());
 									}else
 

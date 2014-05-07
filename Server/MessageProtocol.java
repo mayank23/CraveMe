@@ -95,6 +95,19 @@ public JSONObject parseMessage() throws Exception
 										JSONObject output = Work.addComment(json);
 										return output;
 									}
+									else
+										if(option.equals("set_craves"))
+										{
+											
+											JSONObject output = Work.setCraves();
+											return output;
+										}
+										else
+											if(option.equals("set_nots"))
+											{
+												JSONObject output = Work.setNots();
+												return output;
+											}
 		
 			// else
 			return null;
@@ -681,6 +694,61 @@ public static JSONObject getComments(JSONObject request)
 
 }
 
+public static JSONObject setCraves(JSONObject request)
+{
+	ConnectToDB();
+	JSONObject response = new JSONObject();
+	try{
+		
+		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET craves = ? WHERE meal_id = ?");
+		stmt.setInt(1, request.getInt("craves"));
+		stmt.setInt(2, request.getInt("meal_id"));
+		stmt.executeUpdate();
+		
+		response.put("response", "success");
+		return response;
+	}
+	catch(Exception e)
+	{
+		try {
+			response.put("response", e.toString());
+			return response;
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return null;
+		}
+	}
+	
+
+}
+public static JSONObject setNots(JSONObject request)
+{
+	ConnectToDB();
+	JSONObject response = new JSONObject();
+	try{
+		
+		PreparedStatement stmt = conn.prepareStatement("UPDATE meals SET nots = ? WHERE meal_id = ?");
+		stmt.setInt(1, request.getInt("nots"));
+		stmt.setInt(2, request.getInt("meal_id"));
+		stmt.executeUpdate();
+		response.put("repsonse","success" );
+		return response;
+	}
+	catch(Exception e)
+	{
+		try {
+			response.put("response", e.toString());
+			return response;
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return null;
+		}
+	}
+	
+
+}
 
 
 }
