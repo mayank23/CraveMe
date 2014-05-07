@@ -649,6 +649,7 @@ public static JSONObject getComments(JSONObject request)
 	try{
 		
 		PreparedStatement stmt = conn.prepareStatement("SELECT * FROM comments_meals WHERE meal_id = ?");
+		stmt.setInt(1, request.getInt("meal_id"));
 		ResultSet result = stmt.executeQuery();
 		JSONArray array = new JSONArray();
 		while(result.next())
