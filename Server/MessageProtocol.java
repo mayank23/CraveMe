@@ -99,13 +99,13 @@ public JSONObject parseMessage() throws Exception
 										if(option.equals("set_craves"))
 										{
 											
-											JSONObject output = Work.setCraves();
+											JSONObject output = Work.setCraves(json);
 											return output;
 										}
 										else
 											if(option.equals("set_nots"))
 											{
-												JSONObject output = Work.setNots();
+												JSONObject output = Work.setNots(json);
 												return output;
 											}
 		

@@ -124,6 +124,11 @@ else
 										pw.println("{\"option\":\"add_comment_meal\",\"meal_id\":12,\"text\":\" Very Tasty!\",\"user_name\":\"person1\"}");
 										System.out.println(reader.readLine());
 									}else
+										if(args[2].equals("set_craves"))
+										{
+											pw.println("{\"option\":\"set_craves\",\"meal_id\":12,\"craves\":20}");
+											System.out.println(reader.readLine());
+										}
 
 		
 			{
