@@ -587,6 +587,7 @@ public static JSONObject getAllMeals(JSONObject request)
 			current.put("photo_url", result.getString("photo_url"));
 			current.put("craves", result.getInt("craves"));
 			current.put("user_name", result.getString("user_name"));
+			current.put("category", result.getString("category"));
 			current.put("title", result.getString("title"));
 			current.put("description", result.getString("description"));
 			current.put("nots", result.getInt("nots"));
