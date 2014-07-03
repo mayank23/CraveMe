@@ -125,8 +125,8 @@ class Work{
 	public static int ConnectToDB()
 	{
 		try {
-			conn = DriverManager.getConnection("jdbc:mysql://data.cs.purdue.edu:50399/lab6", "my_user", "abc");
-			
+			conn = DriverManager.getConnection("jdbc:mysql://data.cs.purdue.edu:50399/lab6", "xxxx", "xxxx");
+
 			return 0;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
